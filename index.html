@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Typing Speed Test - WPM & Accuracy Tracker</title>
+    <title>Typing Speed Test - Multiplayer Mode</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -14,7 +14,7 @@
             padding: 20px;
         }
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
         }
         header {
@@ -24,6 +24,182 @@
         }
         header h1 { font-size: 2.5em; margin-bottom: 10px; }
         header p { opacity: 0.9; }
+        
+        /* Mode Selection */
+        .mode-selection {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .mode-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+            color: #667eea;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .mode-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
+        .mode-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        /* Room Code Section */
+        .room-section {
+            display: none;
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .room-section.show { display: block; }
+        .room-section h2 { color: #1f2937; margin-bottom: 20px; }
+        .room-code-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2em;
+            color: #667eea;
+            background: #f3f4f6;
+            padding: 15px 30px;
+            border-radius: 8px;
+            display: inline-block;
+            margin: 10px 0;
+            letter-spacing: 3px;
+        }
+        .room-input {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5em;
+            padding: 12px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            text-align: center;
+            width: 200px;
+            text-transform: uppercase;
+            margin: 10px;
+        }
+        .room-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .room-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .copy-btn {
+            background: #10b981;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover { background: #059669; }
+        .copy-btn.copied { background: #6b7280; }
+        
+        /* Player Status */
+        .player-status {
+            display: none;
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .player-status.show { display: block; }
+        .players-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .player-card {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 20px;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        .player-card.you { border-color: #667eea; }
+        .player-card.opponent { border-color: #f59e0b; }
+        .player-card.winner { 
+            border-color: #10b981; 
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        .player-name {
+            font-weight: 700;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .player-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: blink 1.5s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .player-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .player-stat {
+            text-align: center;
+        }
+        .player-stat-value {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #667eea;
+        }
+        .player-stat-label {
+            font-size: 0.8em;
+            color: #6b7280;
+        }
+        .progress-bar-container {
+            background: #e5e7eb;
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .progress-bar {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        .progress-bar.you { background: linear-gradient(90deg, #667eea, #764ba2); }
+        .progress-bar.opponent { background: linear-gradient(90deg, #f59e0b, #f97316); }
+        .progress-text {
+            text-align: center;
+            font-size: 0.85em;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+        
+        /* Stats */
         .stats {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -47,6 +223,8 @@
             font-size: 0.9em;
             margin-top: 5px;
         }
+        
+        /* Test Area */
         .test-area {
             background: white;
             border-radius: 16px;
@@ -108,6 +286,13 @@
             background: #f3f4f6;
             color: #4b5563;
         }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Results */
         .results {
             display: none;
             margin-top: 30px;
@@ -140,6 +325,100 @@
             color: #6b7280;
             font-size: 0.9em;
         }
+        
+        /* Winner Celebration */
+        .winner-celebration {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .winner-celebration.show { display: flex; }
+        .winner-text {
+            font-size: 4em;
+            font-weight: 700;
+            color: #fbbf24;
+            text-align: center;
+            animation: winnerBounce 1s infinite;
+            text-shadow: 0 0 30px rgba(251, 191, 36, 0.5);
+        }
+        @keyframes winnerBounce {
+            0%, 100% { transform: scale(1) rotate(-3deg); }
+            50% { transform: scale(1.1) rotate(3deg); }
+        }
+        .winner-subtext {
+            font-size: 1.5em;
+            color: white;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .winner-stats {
+            display: flex;
+            gap: 30px;
+            margin-top: 30px;
+            color: white;
+        }
+        .winner-stat {
+            text-align: center;
+        }
+        .winner-stat-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: #fbbf24;
+        }
+        .close-celebration {
+            margin-top: 40px;
+            padding: 15px 40px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .close-celebration:hover { transform: scale(1.05); }
+        
+        /* Confetti Canvas */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+        }
+        
+        /* Waiting Message */
+        .waiting-message {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+            font-size: 1.1em;
+        }
+        .waiting-message.show { display: block; }
+        .waiting-message .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #e5e7eb;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
         footer {
             text-align: center;
             color: white;
@@ -147,20 +426,109 @@
             opacity: 0.8;
         }
         footer a { color: white; }
+        
         @media (max-width: 600px) {
             .stats { grid-template-columns: 1fr; }
             .result-grid { grid-template-columns: 1fr; }
+            .players-grid { grid-template-columns: 1fr; }
+            .mode-selection { flex-direction: column; align-items: center; }
+            .winner-text { font-size: 2.5em; }
         }
     </style>
 </head>
 <body>
+    <canvas id="confetti-canvas"></canvas>
+    
     <div class="container">
         <header>
             <h1>⌨️ Typing Speed Test</h1>
-            <p>Test your typing speed and accuracy</p>
+            <p>Test your typing speed and accuracy - Now with Multiplayer!</p>
         </header>
         
-        <div class="stats">
+        <!-- Mode Selection -->
+        <div class="mode-selection">
+            <button class="mode-btn active" id="soloBtn" onclick="setMode('solo')">👤 Solo Mode</button>
+            <button class="mode-btn" id="multiplayerBtn" onclick="setMode('multiplayer')">👥 Race a Friend</button>
+        </div>
+        
+        <!-- Room Section -->
+        <div class="room-section" id="roomSection">
+            <div id="createRoomView">
+                <h2>🏁 Create a Race Room</h2>
+                <p>Generate a room code and share it with your friend!</p>
+                <div class="room-code-display" id="roomCodeDisplay">----</div>
+                <div class="room-actions">
+                    <button class="btn btn-primary" onclick="generateRoomCode()">🎲 Generate Code</button>
+                    <button class="copy-btn" id="copyBtn" onclick="copyRoomCode()">📋 Copy Code</button>
+                </div>
+            </div>
+            <div id="joinRoomView" style="display: none;">
+                <h2>🏃 Join a Race</h2>
+                <p>Enter the room code shared by your friend:</p>
+                <input type="text" class="room-input" id="joinRoomInput" placeholder="ABCD" maxlength="4">
+                <div class="room-actions">
+                    <button class="btn btn-primary" onclick="joinRoom()">🚀 Join Race</button>
+                </div>
+            </div>
+            <div style="margin-top: 20px;">
+                <button class="btn btn-secondary" onclick="toggleRoomView()">🔄 Switch to <span id="switchText">Join</span></button>
+            </div>
+        </div>
+        
+        <!-- Player Status -->
+        <div class="player-status" id="playerStatus">
+            <div class="players-grid">
+                <div class="player-card you" id="playerCardYou">
+                    <div class="player-name">
+                        <span class="player-indicator"></span>
+                        You
+                    </div>
+                    <div class="player-stats">
+                        <div class="player-stat">
+                            <div class="player-stat-value" id="yourWpm">0</div>
+                            <div class="player-stat-label">WPM</div>
+                        </div>
+                        <div class="player-stat">
+                            <div class="player-stat-value" id="yourAccuracy">0%</div>
+                            <div class="player-stat-label">Accuracy</div>
+                        </div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar you" id="yourProgress" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-text" id="yourProgressText">0% complete</div>
+                </div>
+                <div class="player-card opponent" id="playerCardOpponent">
+                    <div class="player-name">
+                        <span class="player-indicator"></span>
+                        Opponent
+                    </div>
+                    <div class="player-stats">
+                        <div class="player-stat">
+                            <div class="player-stat-value" id="opponentWpm">0</div>
+                            <div class="player-stat-label">WPM</div>
+                        </div>
+                        <div class="player-stat">
+                            <div class="player-stat-value" id="opponentAccuracy">0%</div>
+                            <div class="player-stat-label">Accuracy</div>
+                        </div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar opponent" id="opponentProgress" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-text" id="opponentProgressText">Waiting...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Waiting Message -->
+        <div class="waiting-message" id="waitingMessage">
+            <span class="spinner"></span>
+            Waiting for opponent to join...
+        </div>
+        
+        <!-- Solo Stats -->
+        <div class="stats" id="soloStats">
             <div class="stat-card">
                 <div class="stat-value" id="wpm">0</div>
                 <div class="stat-label">WPM</div>
@@ -183,6 +551,7 @@
             <div class="controls">
                 <button class="btn btn-primary" id="startBtn" onclick="startTest()">▶️ Start Test</button>
                 <button class="btn btn-secondary" onclick="resetTest()">🔄 Reset</button>
+                <button class="btn btn-secondary" id="leaveRoomBtn" onclick="leaveRoom()" style="display: none;">🚪 Leave Room</button>
             </div>
             
             <div class="results" id="results">
@@ -213,7 +582,25 @@
         </footer>
     </div>
     
+    <!-- Winner Celebration Overlay -->
+    <div class="winner-celebration" id="winnerCelebration">
+        <div class="winner-text" id="winnerText">🏆 You Win!</div>
+        <div class="winner-subtext" id="winnerSubtext">Amazing typing skills!</div>
+        <div class="winner-stats">
+            <div class="winner-stat">
+                <div class="winner-stat-value" id="winnerWpm">0</div>
+                <div>WPM</div>
+            </div>
+            <div class="winner-stat">
+                <div class="winner-stat-value" id="winnerAccuracy">0%</div>
+                <div>Accuracy</div>
+            </div>
+        </div>
+        <button class="close-celebration" onclick="closeCelebration()">🎉 Awesome!</button>
+    </div>
+    
     <script>
+        // Game Data
         const quotes = [
             "The quick brown fox jumps over the lazy dog.",
             "Success is not final, failure is not fatal: it is the courage to continue that counts.",
@@ -227,20 +614,307 @@
             "The greatest glory in living lies not in never falling, but in rising every time we fall."
         ];
         
+        // State
         let currentQuote = '';
         let startTime = null;
         let timerInterval = null;
         let isTestActive = false;
+        let currentMode = 'solo';
+        let currentRoomCode = null;
+        let isRoomHost = false;
+        let syncInterval = null;
+        let playerId = null;
+        let opponentJoined = false;
+        let raceFinished = false;
         
+        // DOM Elements
         const quoteDisplay = document.getElementById('quoteDisplay');
         const inputArea = document.getElementById('inputArea');
         const startBtn = document.getElementById('startBtn');
         const results = document.getElementById('results');
+        const roomSection = document.getElementById('roomSection');
+        const playerStatus = document.getElementById('playerStatus');
+        const soloStats = document.getElementById('soloStats');
+        const waitingMessage = document.getElementById('waitingMessage');
+        const leaveRoomBtn = document.getElementById('leaveRoomBtn');
         
-        function startTest() {
-            currentQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        // Initialize
+        function init() {
+            playerId = 'player_' + Math.random().toString(36).substr(2, 9);
+            
+            // Check for room code in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const roomCode = urlParams.get('room');
+            if (roomCode) {
+                setMode('multiplayer');
+                document.getElementById('joinRoomInput').value = roomCode.toUpperCase();
+                joinRoom();
+            }
+            
+            // Start sync loop
+            setInterval(syncLoop, 500);
+        }
+        
+        // Mode Selection
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('soloBtn').classList.toggle('active', mode === 'solo');
+            document.getElementById('multiplayerBtn').classList.toggle('active', mode === 'multiplayer');
+            
+            if (mode === 'multiplayer') {
+                roomSection.classList.add('show');
+                soloStats.style.display = 'none';
+            } else {
+                roomSection.classList.remove('show');
+                playerStatus.classList.remove('show');
+                soloStats.style.display = 'grid';
+                waitingMessage.classList.remove('show');
+                leaveRoomBtn.style.display = 'none';
+                leaveRoom();
+            }
+        }
+        
+        // Toggle Room View
+        function toggleRoomView() {
+            const createView = document.getElementById('createRoomView');
+            const joinView = document.getElementById('joinRoomView');
+            const switchText = document.getElementById('switchText');
+            
+            if (createView.style.display === 'none') {
+                createView.style.display = 'block';
+                joinView.style.display = 'none';
+                switchText.textContent = 'Join';
+            } else {
+                createView.style.display = 'none';
+                joinView.style.display = 'block';
+                switchText.textContent = 'Create';
+            }
+        }
+        
+        // Generate Room Code
+        function generateRoomCode() {
+            const code = Math.random().toString(36).substring(2, 6).toUpperCase();
+            document.getElementById('roomCodeDisplay').textContent = code;
+            currentRoomCode = code;
+            isRoomHost = true;
+            
+            // Initialize room data
+            const roomData = {
+                host: playerId,
+                quote: quotes[Math.floor(Math.random() * quotes.length)],
+                hostProgress: 0,
+                hostWpm: 0,
+                hostAccuracy: 0,
+                hostFinished: false,
+                guest: null,
+                guestProgress: 0,
+                guestWpm: 0,
+                guestAccuracy: 0,
+                guestFinished: false,
+                raceStarted: false,
+                raceEnded: false,
+                created: Date.now()
+            };
+            localStorage.setItem('typing_room_' + code, JSON.stringify(roomData));
+            
+            // Show player status
+            playerStatus.classList.add('show');
+            waitingMessage.classList.add('show');
+            leaveRoomBtn.style.display = 'inline-block';
+            
+            // Update URL
+            window.history.replaceState({}, '', '?room=' + code);
+        }
+        
+        // Copy Room Code
+        function copyRoomCode() {
+            const code = document.getElementById('roomCodeDisplay').textContent;
+            if (code === '----') return;
+            
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = document.getElementById('copyBtn');
+                btn.textContent = '✅ Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = '📋 Copy Code';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+        
+        // Join Room
+        function joinRoom() {
+            const code = document.getElementById('joinRoomInput').value.toUpperCase();
+            if (code.length !== 4) {
+                alert('Please enter a valid 4-character room code');
+                return;
+            }
+            
+            const roomData = JSON.parse(localStorage.getItem('typing_room_' + code));
+            if (!roomData) {
+                alert('Room not found. Please check the code and try again.');
+                return;
+            }
+            
+            // Join as guest
+            roomData.guest = playerId;
+            localStorage.setItem('typing_room_' + code, JSON.stringify(roomData));
+            
+            currentRoomCode = code;
+            isRoomHost = false;
+            opponentJoined = true;
+            
+            // Show player status
+            playerStatus.classList.add('show');
+            roomSection.classList.remove('show');
+            leaveRoomBtn.style.display = 'inline-block';
+            
+            // Update URL
+            window.history.replaceState({}, '', '?room=' + code);
+            
+            // Load the quote
+            currentQuote = roomData.quote;
             quoteDisplay.innerHTML = currentQuote.split('').map(char => 
-                `\u003cspan class="char"\u003e${char}\u003c/span\u003e`
+                `<span class="char">${char}</span>`
+            ).join('');
+        }
+        
+        // Leave Room
+        function leaveRoom() {
+            if (currentRoomCode) {
+                const roomData = JSON.parse(localStorage.getItem('typing_room_' + currentRoomCode));
+                if (roomData) {
+                    if (isRoomHost) {
+                        localStorage.removeItem('typing_room_' + currentRoomCode);
+                    } else {
+                        roomData.guest = null;
+                        roomData.guestProgress = 0;
+                        roomData.guestWpm = 0;
+                        roomData.guestAccuracy = 0;
+                        localStorage.setItem('typing_room_' + currentRoomCode, JSON.stringify(roomData));
+                    }
+                }
+            }
+            
+            currentRoomCode = null;
+            isRoomHost = false;
+            opponentJoined = false;
+            raceFinished = false;
+            
+            playerStatus.classList.remove('show');
+            waitingMessage.classList.remove('show');
+            leaveRoomBtn.style.display = 'none';
+            
+            window.history.replaceState({}, '', window.location.pathname);
+            resetTest();
+        }
+        
+        // Sync Loop
+        function syncLoop() {
+            if (!currentRoomCode) return;
+            
+            const roomData = JSON.parse(localStorage.getItem('typing_room_' + currentRoomCode));
+            if (!roomData) {
+                // Room was deleted
+                alert('The room has been closed by the host.');
+                leaveRoom();
+                return;
+            }
+            
+            // Check if opponent joined
+            if (isRoomHost && roomData.guest && !opponentJoined) {
+                opponentJoined = true;
+                waitingMessage.classList.remove('show');
+            }
+            
+            // Update opponent stats
+            if (isRoomHost) {
+                document.getElementById('opponentWpm').textContent = roomData.guestWpm || 0;
+                document.getElementById('opponentAccuracy').textContent = (roomData.guestAccuracy || 0) + '%';
+                document.getElementById('opponentProgress').style.width = (roomData.guestProgress || 0) + '%';
+                document.getElementById('opponentProgressText').textContent = Math.round(roomData.guestProgress || 0) + '% complete';
+                
+                if (roomData.guestFinished && !raceFinished) {
+                    checkRaceEnd();
+                }
+            } else {
+                document.getElementById('opponentWpm').textContent = roomData.hostWpm || 0;
+                document.getElementById('opponentAccuracy').textContent = (roomData.hostAccuracy || 0) + '%';
+                document.getElementById('opponentProgress').style.width = (roomData.hostProgress || 0) + '%';
+                document.getElementById('opponentProgressText').textContent = Math.round(roomData.hostProgress || 0) + '% complete';
+                
+                // Sync quote if not set
+                if (!currentQuote && roomData.quote) {
+                    currentQuote = roomData.quote;
+                    quoteDisplay.innerHTML = currentQuote.split('').map(char => 
+                        `<span class="char">${char}</span>`
+                    ).join('');
+                }
+                
+                if (roomData.hostFinished && !raceFinished) {
+                    checkRaceEnd();
+                }
+            }
+        }
+        
+        // Update Progress
+        function updateProgress() {
+            if (!currentRoomCode || !isTestActive) return;
+            
+            const roomData = JSON.parse(localStorage.getItem('typing_room_' + currentRoomCode));
+            if (!roomData) return;
+            
+            const typed = inputArea.value;
+            const progress = Math.min(100, (typed.length / currentQuote.length) * 100);
+            const elapsed = Math.max(1, Math.floor((new Date() - startTime) / 1000));
+            const minutes = elapsed / 60;
+            const wordsTyped = typed.trim().split(/\s+/).length;
+            const wpm = Math.round(wordsTyped / minutes);
+            
+            let correct = 0;
+            for (let i = 0; i < typed.length; i++) {
+                if (typed[i] === currentQuote[i]) correct++;
+            }
+            const accuracy = typed.length > 0 ? Math.round((correct / typed.length) * 100) : 100;
+            
+            if (isRoomHost) {
+                roomData.hostProgress = progress;
+                roomData.hostWpm = wpm;
+                roomData.hostAccuracy = accuracy;
+            } else {
+                roomData.guestProgress = progress;
+                roomData.guestWpm = wpm;
+                roomData.guestAccuracy = accuracy;
+            }
+            
+            localStorage.setItem('typing_room_' + currentRoomCode, JSON.stringify(roomData));
+            
+            // Update your stats display
+            document.getElementById('yourWpm').textContent = wpm;
+            document.getElementById('yourAccuracy').textContent = accuracy + '%';
+            document.getElementById('yourProgress').style.width = progress + '%';
+            document.getElementById('yourProgressText').textContent = Math.round(progress) + '% complete';
+        }
+        
+        // Start Test
+        function startTest() {
+            if (currentMode === 'multiplayer') {
+                if (!currentRoomCode) {
+                    alert('Please create or join a room first!');
+                    return;
+                }
+                if (isRoomHost && !opponentJoined) {
+                    alert('Waiting for opponent to join...');
+                    return;
+                }
+            }
+            
+            if (currentMode === 'solo' || isRoomHost) {
+                currentQuote = quotes[Math.floor(Math.random() * quotes.length)];
+            }
+            
+            quoteDisplay.innerHTML = currentQuote.split('').map(char => 
+                `<span class="char">${char}</span>`
             ).join('');
             
             inputArea.value = '';
@@ -252,29 +926,42 @@
             
             startTime = new Date();
             isTestActive = true;
+            raceFinished = false;
             
-            timerInterval = setInterval(updateTimer, 100);
+            timerInterval = setInterval(() => {
+                updateTimer();
+                if (currentMode === 'multiplayer') {
+                    updateProgress();
+                }
+            }, 100);
         }
         
+        // Update Timer
         function updateTimer() {
             if (!isTestActive) return;
             const elapsed = Math.floor((new Date() - startTime) / 1000);
-            document.getElementById('time').textContent = elapsed + 's';
+            
+            if (currentMode === 'solo') {
+                document.getElementById('time').textContent = elapsed + 's';
+            }
             
             // Calculate WPM
-            const wordsTyped = inputArea.value.trim().split(/\s+/).length;
-            const minutes = elapsed / 60;
-            const wpm = minutes > 0 ? Math.round(wordsTyped / minutes) : 0;
-            document.getElementById('wpm').textContent = wpm;
+            const typed = inputArea.value;
+            const wordsTyped = typed.trim().split(/\s+/).length;
+            const minutes = Math.max(elapsed, 1) / 60;
+            const wpm = Math.round(wordsTyped / minutes);
             
             // Calculate accuracy
-            const typed = inputArea.value;
             let correct = 0;
             for (let i = 0; i < typed.length; i++) {
                 if (typed[i] === currentQuote[i]) correct++;
             }
             const accuracy = typed.length > 0 ? Math.round((correct / typed.length) * 100) : 100;
-            document.getElementById('accuracy').textContent = accuracy + '%';
+            
+            if (currentMode === 'solo') {
+                document.getElementById('wpm').textContent = wpm;
+                document.getElementById('accuracy').textContent = accuracy + '%';
+            }
             
             // Update visual feedback
             updateVisualFeedback(typed);
@@ -285,6 +972,7 @@
             }
         }
         
+        // Update Visual Feedback
         function updateVisualFeedback(typed) {
             const chars = quoteDisplay.querySelectorAll('.char');
             chars.forEach((char, index) => {
@@ -301,6 +989,7 @@
             });
         }
         
+        // End Test
         function endTest() {
             isTestActive = false;
             clearInterval(timerInterval);
@@ -308,13 +997,13 @@
             startBtn.textContent = '▶️ Start Test';
             startBtn.onclick = startTest;
             
-            // Show final results
+            // Calculate final stats
             const elapsed = Math.floor((new Date() - startTime) / 1000);
-            const wordsTyped = inputArea.value.trim().split(/\s+/).length;
-            const minutes = elapsed / 60;
-            const wpm = minutes > 0 ? Math.round(wordsTyped / minutes) : 0;
-            
             const typed = inputArea.value;
+            const wordsTyped = typed.trim().split(/\s+/).length;
+            const minutes = Math.max(elapsed, 1) / 60;
+            const wpm = Math.round(wordsTyped / minutes);
+            
             let correct = 0;
             for (let i = 0; i < typed.length; i++) {
                 if (typed[i] === currentQuote[i]) correct++;
@@ -322,14 +1011,82 @@
             const accuracy = typed.length > 0 ? Math.round((correct / typed.length) * 100) : 0;
             const errors = typed.length - correct;
             
-            document.getElementById('finalWpm').textContent = wpm;
-            document.getElementById('finalAccuracy').textContent = accuracy + '%';
-            document.getElementById('finalChars').textContent = typed.length;
-            document.getElementById('finalErrors').textContent = errors;
+            // Mark as finished in multiplayer
+            if (currentRoomCode) {
+                const roomData = JSON.parse(localStorage.getItem('typing_room_' + currentRoomCode));
+                if (roomData) {
+                    if (isRoomHost) {
+                        roomData.hostFinished = true;
+                        roomData.hostFinalWpm = wpm;
+                        roomData.hostFinalAccuracy = accuracy;
+                    } else {
+                        roomData.guestFinished = true;
+                        roomData.guestFinalWpm = wpm;
+                        roomData.guestFinalAccuracy = accuracy;
+                    }
+                    localStorage.setItem('typing_room_' + currentRoomCode, JSON.stringify(roomData));
+                    
+                    checkRaceEnd();
+                }
+            }
             
-            results.classList.add('show');
+            // Show results for solo mode
+            if (currentMode === 'solo') {
+                document.getElementById('finalWpm').textContent = wpm;
+                document.getElementById('finalAccuracy').textContent = accuracy + '%';
+                document.getElementById('finalChars').textContent = typed.length;
+                document.getElementById('finalErrors').textContent = errors;
+                results.classList.add('show');
+            }
         }
         
+        // Check Race End
+        function checkRaceEnd() {
+            if (raceFinished) return;
+            
+            const roomData = JSON.parse(localStorage.getItem('typing_room_' + currentRoomCode));
+            if (!roomData) return;
+            
+            if (roomData.hostFinished && roomData.guestFinished) {
+                raceFinished = true;
+                roomData.raceEnded = true;
+                localStorage.setItem('typing_room_' + currentRoomCode, JSON.stringify(roomData));
+                
+                // Determine winner
+                const youWpm = isRoomHost ? roomData.hostFinalWpm : roomData.guestFinalWpm;
+                const youAccuracy = isRoomHost ? roomData.hostFinalAccuracy : roomData.guestFinalAccuracy;
+                const opponentWpm = isRoomHost ? roomData.guestFinalWpm : roomData.hostFinalWpm;
+                
+                let winnerText, winnerSubtext;
+                if (youWpm > opponentWpm) {
+                    winnerText = '🏆 You Win!';
+                    winnerSubtext = 'Amazing typing skills!';
+                    document.getElementById('playerCardYou').classList.add('winner');
+                    startConfetti();
+                } else if (youWpm < opponentWpm) {
+                    winnerText = '😅 Opponent Wins!';
+                    winnerSubtext = 'Better luck next time!';
+                    document.getElementById('playerCardOpponent').classList.add('winner');
+                } else {
+                    winnerText = '🤝 It\'s a Tie!';
+                    winnerSubtext = 'Great minds type alike!';
+                    document.getElementById('playerCardYou').classList.add('winner');
+                    document.getElementById('playerCardOpponent').classList.add('winner');
+                    startConfetti();
+                }
+                
+                document.getElementById('winnerText').textContent = winnerText;
+                document.getElementById('winnerSubtext').textContent = winnerSubtext;
+                document.getElementById('winnerWpm').textContent = youWpm;
+                document.getElementById('winnerAccuracy').textContent = youAccuracy + '%';
+                
+                setTimeout(() => {
+                    document.getElementById('winnerCelebration').classList.add('show');
+                }, 500);
+            }
+        }
+        
+        // Reset Test
         function resetTest() {
             isTestActive = false;
             clearInterval(timerInterval);
@@ -339,17 +1096,124 @@
             startBtn.textContent = '▶️ Start Test';
             startBtn.onclick = startTest;
             results.classList.remove('show');
+            raceFinished = false;
             
-            document.getElementById('wpm').textContent = '0';
-            document.getElementById('accuracy').textContent = '0%';
-            document.getElementById('time').textContent = '0s';
+            // Reset player cards
+            document.getElementById('playerCardYou').classList.remove('winner');
+            document.getElementById('playerCardOpponent').classList.remove('winner');
+            document.getElementById('yourWpm').textContent = '0';
+            document.getElementById('yourAccuracy').textContent = '0%';
+            document.getElementById('yourProgress').style.width = '0%';
+            document.getElementById('yourProgressText').textContent = '0% complete';
+            document.getElementById('opponentWpm').textContent = '0';
+            document.getElementById('opponentAccuracy').textContent = '0%';
+            document.getElementById('opponentProgress').style.width = '0%';
+            document.getElementById('opponentProgressText').textContent = 'Waiting...';
+            
+            // Reset room data if host
+            if (currentRoomCode && isRoomHost) {
+                const roomData = JSON.parse(localStorage.getItem('typing_room_' + currentRoomCode));
+                if (roomData) {
+                    roomData.quote = quotes[Math.floor(Math.random() * quotes.length)];
+                    roomData.hostProgress = 0;
+                    roomData.hostWpm = 0;
+                    roomData.hostAccuracy = 0;
+                    roomData.hostFinished = false;
+                    roomData.guestProgress = 0;
+                    roomData.guestWpm = 0;
+                    roomData.guestAccuracy = 0;
+                    roomData.guestFinished = false;
+                    roomData.raceStarted = false;
+                    roomData.raceEnded = false;
+                    localStorage.setItem('typing_room_' + currentRoomCode, JSON.stringify(roomData));
+                }
+            }
+            
+            if (currentMode === 'solo') {
+                document.getElementById('wpm').textContent = '0';
+                document.getElementById('accuracy').textContent = '0%';
+                document.getElementById('time').textContent = '0s';
+            }
         }
         
+        // Close Celebration
+        function closeCelebration() {
+            document.getElementById('winnerCelebration').classList.remove('show');
+            stopConfetti();
+        }
+        
+        // Confetti Effect
+        let confettiAnimation = null;
+        let confettiParticles = [];
+        
+        function startConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            const colors = ['#fbbf24', '#f59e0b', '#ef4444', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899'];
+            
+            for (let i = 0; i < 150; i++) {
+                confettiParticles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    size: Math.random() * 10 + 5,
+                    speedY: Math.random() * 3 + 2,
+                    speedX: Math.random() * 2 - 1,
+                    rotation: Math.random() * 360,
+                    rotationSpeed: Math.random() * 10 - 5
+                });
+            }
+            
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                confettiParticles.forEach((p, i) => {
+                    p.y += p.speedY;
+                    p.x += p.speedX;
+                    p.rotation += p.rotationSpeed;
+                    
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate(p.rotation * Math.PI / 180);
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                    ctx.restore();
+                    
+                    if (p.y > canvas.height) {
+                        p.y = -20;
+                        p.x = Math.random() * canvas.width;
+                    }
+                });
+                
+                confettiAnimation = requestAnimationFrame(animate);
+            }
+            
+            animate();
+        }
+        
+        function stopConfetti() {
+            if (confettiAnimation) {
+                cancelAnimationFrame(confettiAnimation);
+                confettiAnimation = null;
+            }
+            confettiParticles = [];
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        // Event Listeners
         inputArea.addEventListener('input', () => {
             if (isTestActive) {
                 updateVisualFeedback(inputArea.value);
             }
         });
+        
+        // Initialize on load
+        init();
     </script>
 </body>
 </html>
