@@ -33,6 +33,11 @@ let raceFinished = false;
 let characterErrors = 0;
 let totalCharacters = 0;
 
+// Statistics
+const STATS_KEY = 'typing_stats';
+const SESSION_HISTORY_KEY = 'typing_session_history';
+const MAX_HISTORY_ITEMS = 50;
+
 // DOM Elements
 const quoteDisplay = document.getElementById('quoteDisplay');
 const inputArea = document.getElementById('inputArea');
@@ -70,6 +75,155 @@ function init() {
     
     // Track stats
     trackUsageStats();
+    
+    // Load and display statistics
+    loadAndDisplayStats();
+}
+
+// Statistics Functions
+function getStats() {
+    const stats = localStorage.getItem(STATS_KEY);
+    return stats ? JSON.parse(stats) : {
+        bestWpm: 0,
+        bestAccuracy: 0,
+        totalTests: 0,
+        totalTimeMinutes: 0,
+        totalCharactersTyped: 0,
+        averageWpm: 0,
+        testsCompleted: 0,
+        testsAbandoned: 0
+    };
+}
+
+function saveStats(stats) {
+    localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+}
+
+function getSessionHistory() {
+    const history = localStorage.getItem(SESSION_HISTORY_KEY);
+    return history ? JSON.parse(history) : [];
+}
+
+function addSessionToHistory(session) {
+    const history = getSessionHistory();
+    history.unshift(session);
+    if (history.length > MAX_HISTORY_ITEMS) {
+        history.pop();
+    }
+    localStorage.setItem(SESSION_HISTORY_KEY, JSON.stringify(history));
+}
+
+function updateStatsAfterTest(wpm, accuracy, characters, errors, timeSeconds, completed) {
+    const stats = getStats();
+    
+    if (completed) {
+        stats.totalTests++;
+        stats.testsCompleted++;
+        stats.totalTimeMinutes += timeSeconds / 60;
+        stats.totalCharactersTyped += characters;
+        
+        // Update best scores
+        if (wpm > stats.bestWpm) {
+            stats.bestWpm = wpm;
+            showToast(`🎉 New Best WPM: ${wpm}!`, 3000);
+        }
+        if (accuracy > stats.bestAccuracy) {
+            stats.bestAccuracy = accuracy;
+        }
+        
+        // Recalculate average
+        const totalWpmSum = getSessionHistory().reduce((sum, s) => sum + s.wpm, 0) + wpm;
+        stats.averageWpm = Math.round(totalWpmSum / (stats.testsCompleted || 1));
+        
+        // Add to history
+        addSessionToHistory({
+            wpm,
+            accuracy,
+            characters,
+            errors,
+            timeSeconds,
+            date: new Date().toISOString(),
+            mode: currentMode
+        });
+    } else {
+        stats.testsAbandoned++;
+    }
+    
+    saveStats(stats);
+    loadAndDisplayStats();
+    
+    return stats;
+}
+
+function loadAndDisplayStats() {
+    const stats = getStats();
+    const statsContainer = document.getElementById('personalStats');
+    if (statsContainer) {
+        statsContainer.innerHTML = `
+            <div class="personal-stat-card">
+                <div class="personal-stat-value">${stats.bestWpm}</div>
+                <div class="personal-stat-label">Best WPM</div>
+            </div>
+            <div class="personal-stat-card">
+                <div class="personal-stat-value">${stats.bestAccuracy}%</div>
+                <div class="personal-stat-label">Best Accuracy</div>
+            </div>
+            <div class="personal-stat-card">
+                <div class="personal-stat-value">${stats.averageWpm}</div>
+                <div class="personal-stat-label">Avg WPM</div>
+            </div>
+            <div class="personal-stat-card">
+                <div class="personal-stat-value">${stats.totalTests}</div>
+                <div class="personal-stat-label">Tests Taken</div>
+            </div>
+        `;
+    }
+    
+    // Update history table
+    updateHistoryTable();
+}
+
+function updateHistoryTable() {
+    const historyTable = document.getElementById('historyTableBody');
+    if (historyTable) {
+        const history = getSessionHistory().slice(0, 10);
+        if (history.length === 0) {
+            historyTable.innerHTML = '<tr><td colspan="6" class="no-history">No completed tests yet. Take a test to see your history!</td></tr>';
+        } else {
+            historyTable.innerHTML = history.map(session => {
+                const date = new Date(session.date);
+                const dateStr = date.toLocaleDateString();
+                const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                return `
+                    <tr>
+                        <td>${dateStr} ${timeStr}</td>
+                        <td class="wpm-cell">${session.wpm}</td>
+                        <td class="accuracy-cell">${session.accuracy}%</td>
+                        <td>${session.characters}</td>
+                        <td>${session.errors}</td>
+                        <td><span class="mode-badge ${session.mode}">${session.mode}</span></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    }
+}
+
+function toggleHistoryModal() {
+    const modal = document.getElementById('historyModal');
+    modal.classList.toggle('show');
+    if (modal.classList.contains('show')) {
+        updateHistoryTable();
+    }
+}
+
+function clearAllStats() {
+    if (confirm('Are you sure you want to clear all your statistics and history? This cannot be undone.')) {
+        localStorage.removeItem(STATS_KEY);
+        localStorage.removeItem(SESSION_HISTORY_KEY);
+        loadAndDisplayStats();
+        showToast('Statistics cleared!', 2000);
+    }
 }
 
 // Mode Selection
@@ -427,16 +581,34 @@ function endTest(completed) {
     startBtn.disabled = false;
     
     // Calculate final stats
-    const timeElapsed = (Date.now() - startTime) / 1000 / 60;
+    const timeElapsed = (Date.now() - startTime) / 1000;
+    const timeMinutes = timeElapsed / 60;
     const correctChars = totalCharacters - characterErrors;
-    const wpm = timeElapsed > 0 ? Math.round((correctChars / 5) / timeElapsed) : 0;
+    const wpm = timeMinutes > 0 ? Math.round((correctChars / 5) / timeMinutes) : 0;
     const accuracy = totalCharacters > 0 ? Math.round((correctChars / totalCharacters) * 100) : 100;
+    
+    // Update and save statistics
+    const stats = updateStatsAfterTest(wpm, accuracy, totalCharacters, characterErrors, timeElapsed, completed);
     
     // Show results
     document.getElementById('finalWpm').textContent = wpm;
     document.getElementById('finalAccuracy').textContent = accuracy + '%';
     document.getElementById('finalChars').textContent = totalCharacters;
     document.getElementById('finalErrors').textContent = characterErrors;
+    
+    // Show personal best in results
+    const personalBestEl = document.getElementById('personalBestResult');
+    if (personalBestEl && completed) {
+        if (wpm >= stats.bestWpm) {
+            personalBestEl.innerHTML = '🏆 New Personal Best!';
+            personalBestEl.classList.add('new-record');
+        } else {
+            personalBestEl.innerHTML = `Personal Best: ${stats.bestWpm} WPM`;
+            personalBestEl.classList.remove('new-record');
+        }
+        personalBestEl.style.display = 'block';
+    }
+    
     results.classList.add('show');
     
     // Multiplayer end

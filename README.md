@@ -24,6 +24,9 @@ A beautiful, interactive typing speed test application with solo and multiplayer
 - **Same Quote** - Both players type the same text for fair comparison
 
 ### General Features
+- **📊 Personal Statistics** - Track your best WPM, accuracy, average WPM, and total tests taken
+- **📜 Session History** - Review your last 50 tests with detailed stats
+- **🏆 New Record Celebrations** - Get notified when you beat your personal best
 - **Keyboard Shortcuts** - Quick actions with keyboard commands
 - **Toast Notifications** - User-friendly feedback messages
 - **Offline Support** - Works even when offline
@@ -35,10 +38,18 @@ A beautiful, interactive typing speed test application with solo and multiplayer
 
 ### Solo Mode
 1. Click **"Solo Mode"** to start practicing alone
-2. Click **"Start Test"** or press **Ctrl/⌘ + Enter**
-3. Type the displayed quote as quickly and accurately as possible
-4. Watch your WPM, accuracy, and time update in real-time
-5. Complete the test to see your final results
+2. View your **Personal Statistics** at the top - Best WPM, Best Accuracy, Average WPM, and Total Tests
+3. Click **"Start Test"** or press **Ctrl/⌘ + Enter**
+4. Type the displayed quote as quickly and accurately as possible
+5. Watch your WPM, accuracy, and time update in real-time
+6. Complete the test to see your final results
+7. Get notified if you set a new personal best!
+
+### Viewing Your Statistics
+- Your stats are displayed at the top of the page
+- Click **"View History"** to see your last 50 tests
+- Each entry shows: Date, WPM, Accuracy, Characters, Errors, and Mode
+- Click **"Clear All Statistics"** to reset (requires confirmation)
 
 ### Multiplayer Mode
 1. Click **"Race a Friend"** to switch to multiplayer
@@ -153,6 +164,15 @@ Open source - feel free to use and modify!
 **Created with 💡 by Lumi for [@shalkith](https://github.com/shalkith)**
 
 ## Changelog
+
+### v2.1.0 - Statistics Update
+- Added personal statistics tracking (Best WPM, Best Accuracy, Average WPM, Total Tests)
+- Added session history with last 50 tests
+- Added history modal with detailed test records
+- Added new record celebration notifications
+- Added "Clear Statistics" functionality with confirmation
+- LocalStorage persistence for all statistics
+- Responsive statistics grid layout
 
 ### v2.0.0 - Multiplayer Update
 - Added multiplayer race mode
