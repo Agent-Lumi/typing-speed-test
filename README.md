@@ -1,6 +1,6 @@
 # ⌨️ Typing Speed Test
 
-A beautiful, interactive typing speed test application that measures your Words Per Minute (WPM), accuracy, and typing performance in real-time.
+A beautiful, interactive typing speed test application with solo and multiplayer modes! Test your Words Per Minute (WPM), accuracy, and race against friends in real-time.
 
 ## 🚀 Live Demo
 
@@ -8,62 +8,106 @@ A beautiful, interactive typing speed test application that measures your Words 
 
 ## ✨ Features
 
+### Solo Mode
 - **Real-time WPM Calculation** - See your typing speed update as you type
 - **Accuracy Tracking** - Monitor your typing accuracy percentage
-- **Live Timer** - 60-second countdown timer for each test
+- **Live Timer** - Track your typing time
 - **Visual Feedback** - Color-coded characters show correct (green) and incorrect (red) keystrokes
-- **Dynamic Quote Generation** - Fresh quotes for every test session
-- **Responsive Design** - Works beautifully on desktop and mobile devices
-- **Modern UI** - Clean, gradient-themed interface with smooth animations
-- **No Installation Required** - Runs directly in your browser
+- **15+ Practice Quotes** - Variety of quotes for practice
+
+### Multiplayer Mode 👥
+- **Create Race Rooms** - Generate unique 4-character room codes
+- **Join Races** - Enter a friend's room code to compete
+- **Real-time Progress** - See both players' progress bars update live
+- **Live Stats** - Track WPM and accuracy in real-time during the race
+- **Winner Celebration** - Confetti animation for the winner!
+- **Same Quote** - Both players type the same text for fair comparison
+
+### General Features
+- **Keyboard Shortcuts** - Quick actions with keyboard commands
+- **Toast Notifications** - User-friendly feedback messages
+- **Offline Support** - Works even when offline
+- **PWA Support** - Install as a standalone app on mobile/desktop
+- **Responsive Design** - Works beautifully on all devices
+- **Clean UI** - Modern, gradient-themed interface with smooth animations
 
 ## 🎯 How to Use
 
-1. **Open the app** in your browser (visit the live demo link above)
-2. **Click the text input area** to begin
-3. **Start typing** the displayed quote as quickly and accurately as possible
-4. **Watch your stats** update in real-time:
-   - **WPM** - Words per minute based on your typing speed
-   - **Accuracy** - Percentage of correctly typed characters
-   - **Time** - Countdown from 60 seconds
-5. **Complete the test** or let the timer run out
-6. **Click "New Test"** to try again with a fresh quote
+### Solo Mode
+1. Click **"Solo Mode"** to start practicing alone
+2. Click **"Start Test"** or press **Ctrl/⌘ + Enter**
+3. Type the displayed quote as quickly and accurately as possible
+4. Watch your WPM, accuracy, and time update in real-time
+5. Complete the test to see your final results
 
-## 🏆 Scoring Explanation
+### Multiplayer Mode
+1. Click **"Race a Friend"** to switch to multiplayer
+2. **To Create a Room:**
+   - Click "Generate Code" to create a unique room
+   - Copy the 4-character code and share it with a friend
+   - Wait for them to join
+3. **To Join a Room:**
+   - Click "Switch to Join"
+   - Enter the 4-character room code
+   - Click "Join Race"
+4. Once both players are ready, either can start the test
+5. Race to finish first with the highest accuracy!
+6. Celebrate the winner with confetti! 🎉
+
+## ⌨️ Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl/⌘ + Enter` | Start Test |
+| `Ctrl/⌘ + R` | Reset Test |
+| `?` | Show Keyboard Shortcuts |
+| `Escape` | Close Modal |
+
+## 🏆 Scoring
 
 ### WPM (Words Per Minute)
-- Calculated based on the number of characters typed correctly
-- Standard formula: `(characters / 5) / (time in minutes)`
-- Only correctly typed characters count toward your score
+- Calculated: `(characters / 5) / (time in minutes)`
+- Only correctly typed characters count
+- Race mode: Higher WPM wins!
 
 ### Accuracy
-- Percentage of characters typed correctly
-- Formula: `(correct characters / total characters typed) × 100`
-- Aim for high accuracy alongside speed!
+- Percentage of correctly typed characters
+- Formula: `(correct / total) × 100`
+- Aim for high accuracy alongside speed
 
-### Timer
-- Each test lasts **60 seconds**
-- Timer starts when you begin typing
-- Test automatically ends when time runs out
+### Multiplayer Winner
+- Winner is determined by: `WPM × (Accuracy / 100)`
+- This balances speed and accuracy for fair competition
 
 ## 🛠️ Technologies Used
 
 - **HTML5** - Semantic structure
-- **CSS3** - Modern styling with Flexbox/Grid
-- **JavaScript** - Real-time typing logic and calculations
+- **CSS3** - Modern styling with CSS Grid/Flexbox
+- **JavaScript** - Real-time typing logic and multiplayer sync
+- **localStorage** - Room data synchronization between players
 - **Google Fonts** - Inter and JetBrains Mono typography
+- **PWA** - Service Worker for offline support
 
-## 📱 Browser Support
+## 📱 Installation (PWA)
 
-Works in all modern browsers:
-- Chrome/Edge
-- Firefox
-- Safari
-- Mobile browsers (iOS Safari, Chrome Mobile)
+You can install this app on your device:
+
+### Chrome/Edge (Desktop)
+1. Visit the live demo
+2. Click the install icon (➕) in the address bar
+3. Follow the prompts
+
+### Safari (iOS)
+1. Visit the live demo in Safari
+2. Tap Share button → "Add to Home Screen"
+3. The app will appear like a native app
+
+### Chrome (Android)
+1. Visit the live demo in Chrome
+2. Tap the menu → "Add to Home screen"
+3. Confirm to install
 
 ## 📝 Local Development
-
-To run locally:
 
 ```bash
 # Clone the repository
@@ -74,19 +118,27 @@ cd typing-speed-test
 
 # Open in your browser
 open index.html
-```
 
-Or simply serve with a local server:
-
-```bash
-# Using Python 3
+# Or serve with a local server
 python -m http.server 8000
-
-# Using Node.js (npx)
-npx serve
+# Then visit http://localhost:8000
 ```
 
-Then visit `http://localhost:8000` in your browser.
+## 🐛 Troubleshooting
+
+**Room not found?**
+- Make sure you entered the code correctly (case-insensitive)
+- Rooms expire after 1 hour of inactivity
+- The host must keep their browser open
+
+**Multiplayer not syncing?**
+- Both players must use the same browser (localStorage limitation)
+- Works best when both players are on the same device/network
+- For true multiplayer, a backend server would be needed
+
+**Install not working?**
+- Make sure you're using HTTPS (required for PWA)
+- Chrome/Edge recommended for best PWA support
 
 ## 🤝 Contributing
 
@@ -99,3 +151,22 @@ Open source - feel free to use and modify!
 ---
 
 **Created with 💡 by Lumi for [@shalkith](https://github.com/shalkith)**
+
+## Changelog
+
+### v2.0.0 - Multiplayer Update
+- Added multiplayer race mode
+- Room creation with shareable codes
+- Real-time progress synchronization
+- Winner celebration with confetti
+- Keyboard shortcuts
+- Toast notifications
+- Offline indicator
+- Clean code structure (separated CSS/JS)
+- Updated documentation
+
+### v1.0.0 - Initial Release
+- Solo typing test mode
+- WPM and accuracy tracking
+- Basic styling
+- PWA support
