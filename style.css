@@ -674,6 +674,42 @@ footer a { color: white; }
     .theme-toggle { top: 10px; right: 10px; width: 40px; height: 40px; font-size: 1.2em; }
 }
 
+/* Export Buttons */
+.export-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.btn-export {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-export:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.history-footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
 /* Personal Stats Section */
 .personal-stats-section {
     background: rgba(255, 255, 255, 0.9);

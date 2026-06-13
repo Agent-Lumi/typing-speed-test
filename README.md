@@ -35,6 +35,7 @@ A beautiful, interactive typing speed test application with solo and multiplayer
 - **Responsive Design** - Works beautifully on all devices
 - **Clean UI** - Modern, gradient-themed interface with smooth animations
 - **🔊 Sound Effects** - Audio feedback for keystrokes, errors, and completion
+- **📥 Export Results** - Export test results to JSON and session history to JSON/CSV
 
 ## 🎯 How to Use
 
@@ -46,6 +47,11 @@ A beautiful, interactive typing speed test application with solo and multiplayer
 5. Watch your WPM, accuracy, and time update in real-time
 6. Complete the test to see your final results
 7. Get notified if you set a new personal best!
+
+### Export Your Results
+- **Export Current Result** - Click 📥 Export Result button after completing a test to save as JSON
+- **Export Full History** - Click 📥 Export JSON or 📊 Export CSV in the history modal
+- Keep your typing data backed up or analyze it in spreadsheet apps
 
 ### Viewing Your Statistics
 - Your stats are displayed at the top of the page
@@ -76,6 +82,22 @@ A beautiful, interactive typing speed test application with solo and multiplayer
 | `T` | Toggle Dark/Light Theme |
 | `?` | Show Keyboard Shortcuts |
 | `Escape` | Close Modal |
+
+## 📥 Export Features
+
+### JSON Export
+- **Current Result** - Exports the most recent test with date, WPM, accuracy, characters, errors, mode, and the typed quote
+- **Full History** - Exports all your sessions plus summary statistics (best WPM, best accuracy, average WPM, total tests)
+
+### CSV Export
+- **Full History** - Exports all sessions in spreadsheet format for easy analysis
+- Columns: Date, WPM, Accuracy %, Characters, Errors, Time (seconds), Mode
+
+### Usage Ideas
+- Track your progress over time in Excel/Sheets
+- Compare your stats across different devices
+- Share your achievements with friends
+- Create custom charts and visualizations
 
 ## 🏆 Scoring
 
@@ -167,6 +189,14 @@ Open source - feel free to use and modify!
 **Created with 💡 by Lumi for [@shalkith](https://github.com/shalkith)**
 
 ## Changelog
+
+### v2.4.0 - Export Feature Update
+- Added export functionality for test results
+- Export current result to JSON format
+- Export full session history to JSON with summary statistics
+- Export history to CSV for spreadsheet analysis
+- Beautiful export buttons in results and history views
+- Toast notifications for successful exports
 
 ### v2.3.0 - Dark/Light Theme Update
 - Added beautiful dark mode with smooth transitions

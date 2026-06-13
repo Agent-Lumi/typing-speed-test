@@ -175,6 +175,13 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Export Buttons -->
+            <div class="export-buttons">
+                <button class="btn btn-export" onclick="ExportManager.exportCurrentResult()">
+                    📥 Export Result (JSON)
+                </button>
+            </div>
         </div>
         
         <footer>
@@ -257,6 +264,8 @@
                 </table>
             </div>
             <div class="history-footer">
+                <button class="btn btn-secondary btn-small" onclick="ExportManager.exportHistory()">📥 Export JSON</button>
+                <button class="btn btn-secondary btn-small" onclick="ExportManager.exportHistoryCSV()">📊 Export CSV</button>
                 <button class="btn btn-danger" onclick="clearAllStats()">🗑️ Clear All Statistics</button>
             </div>
         </div>

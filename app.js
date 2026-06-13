@@ -883,6 +883,109 @@ function showToast(message) {
     }, 3000);
 }
 
+// Export Functions
+const ExportManager = {
+    // Export current session results
+    exportCurrentResult() {
+        const finalWpm = document.getElementById('finalWpm').textContent;
+        const finalAccuracy = document.getElementById('finalAccuracy').textContent;
+        const finalChars = document.getElementById('finalChars').textContent;
+        const finalErrors = document.getElementById('finalErrors').textContent;
+        
+        if (finalWpm === '0') {
+            showToast('Complete a test first to export results');
+            return;
+        }
+        
+        const result = {
+            date: new Date().toISOString(),
+            wpm: parseInt(finalWpm),
+            accuracy: parseInt(finalAccuracy),
+            characters: parseInt(finalChars),
+            errors: parseInt(finalErrors),
+            mode: currentMode,
+            quote: currentQuote
+        };
+        
+        this.downloadJSON(result, `typing-result-${Date.now()}.json`);
+        showToast('✅ Results exported!');
+    },
+    
+    // Export all session history
+    exportHistory() {
+        const history = getSessionHistory();
+        if (history.length === 0) {
+            showToast('No history to export. Complete some tests first!');
+            return;
+        }
+        
+        const stats = getStats();
+        const exportData = {
+            exportDate: new Date().toISOString(),
+            summary: {
+                bestWpm: stats.bestWpm,
+                bestAccuracy: stats.bestAccuracy,
+                averageWpm: stats.averageWpm,
+                totalTests: stats.totalTests,
+                testsCompleted: stats.testsCompleted
+            },
+            sessions: history
+        };
+        
+        this.downloadJSON(exportData, `typing-history-${new Date().toISOString().split('T')[0]}.json`);
+        showToast(`✅ Exported ${history.length} sessions!`);
+    },
+    
+    // Export as CSV
+    exportHistoryCSV() {
+        const history = getSessionHistory();
+        if (history.length === 0) {
+            showToast('No history to export. Complete some tests first!');
+            return;
+        }
+        
+        const headers = ['Date', 'WPM', 'Accuracy (%)', 'Characters', 'Errors', 'Time (s)', 'Mode'];
+        const rows = history.map(session => [
+            new Date(session.date).toLocaleString(),
+            session.wpm,
+            session.accuracy,
+            session.characters,
+            session.errors,
+            session.timeSeconds,
+            session.mode
+        ]);
+        
+        const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+        this.downloadCSV(csv, `typing-history-${new Date().toISOString().split('T')[0]}.csv`);
+        showToast(`✅ Exported ${history.length} sessions as CSV!`);
+    },
+    
+    // Download helper
+    downloadJSON(data, filename) {
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    },
+    
+    downloadCSV(data, filename) {
+        const blob = new Blob([data], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+};
+
 // Usage Stats
 function trackUsageStats() {
     const stats = JSON.parse(localStorage.getItem('typing-stats') || '{}');
