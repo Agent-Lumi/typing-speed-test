@@ -33,6 +33,7 @@ A beautiful, interactive typing speed test application with solo and multiplayer
 - **PWA Support** - Install as a standalone app on mobile/desktop
 - **Responsive Design** - Works beautifully on all devices
 - **Clean UI** - Modern, gradient-themed interface with smooth animations
+- **🔊 Sound Effects** - Audio feedback for keystrokes, errors, and completion
 
 ## 🎯 How to Use
 
@@ -164,6 +165,16 @@ Open source - feel free to use and modify!
 **Created with 💡 by Lumi for [@shalkith](https://github.com/shalkith)**
 
 ## Changelog
+
+### v2.2.0 - Sound Effects Update
+- Added immersive sound effects system
+- Audio feedback for each keystroke
+- Error sound for incorrect characters
+- Success chime on test completion
+- Start test sound cue
+- Toggle button to enable/disable sounds
+- Volume and preference saved to localStorage
+- Web Audio API powered (no external files needed)
 
 ### v2.1.0 - Statistics Update
 - Added personal statistics tracking (Best WPM, Best Accuracy, Average WPM, Total Tests)

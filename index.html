@@ -258,6 +258,156 @@
         </div>
     </div>
     
+    <!-- Sound Effects Feature -->
+    <script>
+    // Sound Effects System
+    const SoundFX = {
+        ctx: null,
+        enabled: true,
+        volume: 0.3,
+        
+        init() {
+            if (typeof AudioContext !== 'undefined') {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            // Load preference
+            const saved = localStorage.getItem('soundfx-settings');
+            if (saved) {
+                const settings = JSON.parse(saved);
+                this.enabled = settings.enabled !== false;
+                this.volume = settings.volume || 0.3;
+            }
+            this.createToggleUI();
+        },
+        
+        createToggleUI() {
+            const toggle = document.createElement('button');
+            toggle.id = 'soundToggle';
+            toggle.title = 'Toggle Sound Effects';
+            toggle.style.cssText = 'position:fixed;top:20px;right:60px;background:rgba(102,126,234,0.9);color:white;border:none;border-radius:50%;width:40px;height:40px;font-size:18px;cursor:pointer;z-index:1000;transition:all 0.3s;box-shadow:0 2px 8px rgba(0,0,0,0.2);';
+            toggle.innerHTML = this.enabled ? '🔊' : '🔇';
+            toggle.onclick = () => this.toggle();
+            document.body.appendChild(toggle);
+        },
+        
+        toggle() {
+            this.enabled = !this.enabled;
+            localStorage.setItem('soundfx-settings', JSON.stringify({ enabled: this.enabled, volume: this.volume }));
+            const toggle = document.getElementById('soundToggle');
+            if (toggle) toggle.innerHTML = this.enabled ? '🔊' : '🔇';
+        },
+        
+        playKeystroke() {
+            if (!this.enabled || !this.ctx) return;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.frequency.value = 800 + Math.random() * 200;
+            osc.type = 'sine';
+            gain.gain.setValueAtTime(this.volume * 0.1, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
+            osc.start(this.ctx.currentTime);
+            osc.stop(this.ctx.currentTime + 0.05);
+        },
+        
+        playError() {
+            if (!this.enabled || !this.ctx) return;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.frequency.value = 200;
+            osc.type = 'sawtooth';
+            gain.gain.setValueAtTime(this.volume * 0.2, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+            osc.start(this.ctx.currentTime);
+            osc.stop(this.ctx.currentTime + 0.1);
+        },
+        
+        playSuccess() {
+            if (!this.enabled || !this.ctx) return;
+            const now = this.ctx.currentTime;
+            [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.frequency.value = freq;
+                osc.type = 'sine';
+                gain.gain.setValueAtTime(0, now + i * 0.05);
+                gain.gain.linearRampToValueAtTime(this.volume * 0.15, now + i * 0.05 + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.05 + 0.15);
+                osc.start(now + i * 0.05);
+                osc.stop(now + i * 0.05 + 0.2);
+            });
+        },
+        
+        playStart() {
+            if (!this.enabled || !this.ctx) return;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.frequency.setValueAtTime(440, this.ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.1);
+            osc.type = 'sine';
+            gain.gain.setValueAtTime(this.volume * 0.2, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+            osc.start(this.ctx.currentTime);
+            osc.stop(this.ctx.currentTime + 0.3);
+        }
+    };
+    
+    // Initialize sounds on first interaction
+    document.addEventListener('click', () => {
+        if (!SoundFX.ctx) SoundFX.init();
+        if (SoundFX.ctx && SoundFX.ctx.state === 'suspended') {
+            SoundFX.ctx.resume();
+        }
+    }, { once: true });
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        SoundFX.init();
+        
+        // Hook into input events
+        const inputArea = document.getElementById('inputArea');
+        if (inputArea) {
+            inputArea.addEventListener('input', (e) => {
+                if (e.inputType === 'deleteContentBackward') return;
+                SoundFX.playKeystroke();
+            });
+            inputArea.addEventListener('keydown', (e) => {
+                // Check for incorrect key press
+                const quoteDisplay = document.getElementById('quoteDisplay');
+                if (quoteDisplay && quoteDisplay.textContent !== 'Click "Start Test" to begin...') {
+                    const currentText = inputArea.value;
+                    const expectedChar = quoteDisplay.querySelector('.quote-text')?.textContent[currentText.length];
+                    if (expectedChar && e.key.length === 1 && e.key !== expectedChar && !e.ctrlKey && !e.metaKey) {
+                        SoundFX.playError();
+                    }
+                }
+            });
+        }
+        
+        // Hook test completion
+        const origShowResults = window.showResults || window.finishTest;
+        if (window.showResults) {
+            const orig = window.showResults;
+            window.showResults = function(...args) {
+                SoundFX.playSuccess();
+                return orig.apply(this, args);
+            };
+        }
+        
+        // Hook start test
+        const startBtn = document.getElementById('startBtn');
+        if (startBtn) {
+            startBtn.addEventListener('click', () => SoundFX.playStart(), { once: false });
+        }
+    });
+    </script>
+    
     <script src="app.js"></script>
 </body>
 </html><style>
