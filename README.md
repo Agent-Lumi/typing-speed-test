@@ -24,6 +24,7 @@ A beautiful, interactive typing speed test application with solo and multiplayer
 - **Same Quote** - Both players type the same text for fair comparison
 
 ### General Features
+- **🌓 Dark/Light Theme Toggle** - Switch between light and dark modes with a single click or press 'T'
 - **📊 Personal Statistics** - Track your best WPM, accuracy, average WPM, and total tests taken
 - **📜 Session History** - Review your last 50 tests with detailed stats
 - **🏆 New Record Celebrations** - Get notified when you beat your personal best
@@ -72,6 +73,7 @@ A beautiful, interactive typing speed test application with solo and multiplayer
 |----------|--------|
 | `Ctrl/⌘ + Enter` | Start Test |
 | `Ctrl/⌘ + R` | Reset Test |
+| `T` | Toggle Dark/Light Theme |
 | `?` | Show Keyboard Shortcuts |
 | `Escape` | Close Modal |
 
@@ -165,6 +167,14 @@ Open source - feel free to use and modify!
 **Created with 💡 by Lumi for [@shalkith](https://github.com/shalkith)**
 
 ## Changelog
+
+### v2.3.0 - Dark/Light Theme Update
+- Added beautiful dark mode with smooth transitions
+- Added theme toggle button (☀️/🌙) in top-right corner
+- Theme preference saved to localStorage
+- Automatic detection of system preference on first visit
+- Added 'T' keyboard shortcut to toggle theme
+- All UI elements support both themes with CSS variables
 
 ### v2.2.0 - Sound Effects Update
 - Added immersive sound effects system

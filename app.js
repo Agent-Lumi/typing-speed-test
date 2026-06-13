@@ -1,5 +1,59 @@
 // Typing Speed Test - Clean JavaScript
 
+// Theme Management
+const ThemeManager = {
+    key: 'typing-test-theme',
+    current: 'light',
+    
+    init() {
+        // Load saved theme
+        const saved = localStorage.getItem(this.key);
+        if (saved && ['light', 'dark'].includes(saved)) {
+            this.current = saved;
+        } else {
+            // Check system preference
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                this.current = 'dark';
+            }
+        }
+        this.apply();
+        this.createToggle();
+    },
+    
+    apply() {
+        document.documentElement.setAttribute('data-theme', this.current);
+        this.updateToggleIcon();
+    },
+    
+    toggle() {
+        this.current = this.current === 'light' ? 'dark' : 'light';
+        localStorage.setItem(this.key, this.current);
+        this.apply();
+        showToast(`Switched to ${this.current} mode`);
+    },
+    
+    createToggle() {
+        // Remove existing if any
+        const existing = document.getElementById('themeToggle');
+        if (existing) existing.remove();
+        
+        const btn = document.createElement('button');
+        btn.id = 'themeToggle';
+        btn.className = 'theme-toggle';
+        btn.title = 'Toggle Theme (T)';
+        btn.innerHTML = this.current === 'light' ? '☀️' : '🌙';
+        btn.onclick = () => this.toggle();
+        document.body.appendChild(btn);
+    },
+    
+    updateToggleIcon() {
+        const btn = document.getElementById('themeToggle');
+        if (btn) {
+            btn.innerHTML = this.current === 'light' ? '☀️' : '🌙';
+        }
+    }
+};
+
 // Game Data
 const quotes = [
     "The quick brown fox jumps over the lazy dog.",
@@ -53,6 +107,9 @@ const leaveRoomBtn = document.getElementById('leaveRoomBtn');
 document.addEventListener('DOMContentLoaded', init);
 
 function init() {
+    // Initialize theme first
+    ThemeManager.init();
+    
     playerId = 'player_' + Math.random().toString(36).substr(2, 9);
     
     // Check for room code in URL
@@ -776,6 +833,12 @@ function setupKeyboardShortcuts() {
         if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
             e.preventDefault();
             showShortcuts();
+        }
+        
+        // T to toggle theme
+        if (e.key === 't' && !e.ctrlKey && !e.metaKey && e.target.tagName !== 'INPUT') {
+            e.preventDefault();
+            ThemeManager.toggle();
         }
     });
 }
