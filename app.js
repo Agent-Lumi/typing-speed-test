@@ -92,6 +92,217 @@ const STATS_KEY = 'typing_stats';
 const SESSION_HISTORY_KEY = 'typing_session_history';
 const MAX_HISTORY_ITEMS = 50;
 
+// Advanced Statistics System
+const AdvancedStats = {
+    STORAGE_KEY: 'typing_advanced_stats',
+    
+    getData() {
+        const data = localStorage.getItem(this.STORAGE_KEY);
+        return data ? JSON.parse(data) : this.getDefaultData();
+    },
+    
+    getDefaultData() {
+        return {
+            sessions: [],
+            dailyStats: {},
+            weeklyStats: {},
+            monthlyStats: {},
+            streaks: {
+                current: 0,
+                longest: 0,
+                lastPractice: null
+            },
+            skillLevel: 'Beginner',
+            improvement: {
+                wpmTrend: [],
+                accuracyTrend: []
+            },
+            timeDistribution: {
+                morning: 0,   // 6-12
+                afternoon: 0, // 12-18
+                evening: 0,   // 18-22
+                night: 0      // 22-6
+            },
+            weakChars: {},
+            totalPracticeTime: 0
+        };
+    },
+    
+    saveData(data) {
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
+    },
+    
+    recordSession(session) {
+        const data = this.getData();
+        const now = new Date();
+        const dateStr = now.toISOString().split('T')[0];
+        const weekStr = this.getWeekKey(now);
+        const monthStr = dateStr.substring(0, 7);
+        
+        // Add to sessions
+        data.sessions.unshift({
+            ...session,
+            date: now.toISOString(),
+            id: 'sess_' + Date.now()
+        });
+        if (data.sessions.length > 100) data.sessions.pop();
+        
+        // Update daily stats
+        if (!data.dailyStats[dateStr]) {
+            data.dailyStats[dateStr] = { tests: 0, avgWpm: 0, avgAccuracy: 0, totalChars: 0 };
+        }
+        const day = data.dailyStats[dateStr];
+        day.tests++;
+        day.avgWpm = Math.round((day.avgWpm * (day.tests - 1) + session.wpm) / day.tests);
+        day.avgAccuracy = Math.round((day.avgAccuracy * (day.tests - 1) + session.accuracy) / day.tests * 10) / 10;
+        day.totalChars += session.characters;
+        
+        // Update weekly stats
+        if (!data.weeklyStats[weekStr]) {
+            data.weeklyStats[weekStr] = { tests: 0, avgWpm: 0, avgAccuracy: 0 };
+        }
+        const week = data.weeklyStats[weekStr];
+        week.tests++;
+        week.avgWpm = Math.round((week.avgWpm * (week.tests - 1) + session.wpm) / week.tests);
+        
+        // Update monthly stats
+        if (!data.monthlyStats[monthStr]) {
+            data.monthlyStats[monthStr] = { tests: 0, avgWpm: 0, bestWpm: 0 };
+        }
+        const month = data.monthlyStats[monthStr];
+        month.tests++;
+        month.avgWpm = Math.round((month.avgWpm * (month.tests - 1) + session.wpm) / month.tests);
+        month.bestWpm = Math.max(month.bestWpm, session.wpm);
+        
+        // Update streak
+        this.updateStreak(data, now);
+        
+        // Update time distribution
+        const hour = now.getHours();
+        if (hour >= 6 && hour < 12) data.timeDistribution.morning++;
+        else if (hour >= 12 && hour < 18) data.timeDistribution.afternoon++;
+        else if (hour >= 18 && hour < 22) data.timeDistribution.evening++;
+        else data.timeDistribution.night++;
+        
+        // Update trends
+        data.improvement.wpmTrend.push(session.wpm);
+        data.improvement.accuracyTrend.push(session.accuracy);
+        if (data.improvement.wpmTrend.length > 30) {
+            data.improvement.wpmTrend.shift();
+            data.improvement.accuracyTrend.shift();
+        }
+        
+        // Update skill level
+        data.skillLevel = this.calculateSkillLevel(data);
+        
+        // Update practice time
+        data.totalPracticeTime += session.timeSeconds;
+        
+        this.saveData(data);
+        return data;
+    },
+    
+    getWeekKey(date) {
+        const d = new Date(date);
+        d.setHours(0, 0, 0, 0);
+        d.setDate(d.getDate() - d.getDay());
+        return d.toISOString().split('T')[0];
+    },
+    
+    updateStreak(data, now) {
+        const today = now.toISOString().split('T')[0];
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        
+        if (data.streaks.lastPractice === today) {
+            return; // Already practiced today
+        }
+        
+        if (data.streaks.lastPractice === yesterdayStr) {
+            data.streaks.current++;
+        } else {
+            data.streaks.current = 1;
+        }
+        
+        data.streaks.lastPractice = today;
+        data.streaks.longest = Math.max(data.streaks.longest, data.streaks.current);
+    },
+    
+    calculateSkillLevel(data) {
+        const recentSessions = data.sessions.slice(0, 10);
+        if (recentSessions.length < 3) return 'Beginner';
+        
+        const avgWpm = recentSessions.reduce((s, x) => s + x.wpm, 0) / recentSessions.length;
+        const avgAcc = recentSessions.reduce((s, x) => s + x.accuracy, 0) / recentSessions.length;
+        
+        if (avgWpm >= 80 && avgAcc >= 98) return 'Expert';
+        if (avgWpm >= 60 && avgAcc >= 95) return 'Advanced';
+        if (avgWpm >= 40 && avgAcc >= 90) return 'Intermediate';
+        return 'Beginner';
+    },
+    
+    getStatsSummary() {
+        const data = this.getData();
+        const sessions = data.sessions;
+        
+        if (sessions.length === 0) return null;
+        
+        const recent = sessions.slice(0, 10);
+        const avgWpm = Math.round(recent.reduce((s, x) => s + x.wpm, 0) / recent.length);
+        const avgAcc = Math.round(recent.reduce((s, x) => s + x.accuracy, 0) / recent.length * 10) / 10;
+        const bestWpm = Math.max(...sessions.map(s => s.wpm));
+        const totalTests = sessions.length;
+        
+        // Calculate consistency (lower std dev = more consistent)
+        const wpmValues = recent.map(s => s.wpm);
+        const mean = wpmValues.reduce((a, b) => a + b, 0) / wpmValues.length;
+        const variance = wpmValues.reduce((s, x) => s + Math.pow(x - mean, 2), 0) / wpmValues.length;
+        const consistency = Math.round(100 - Math.min(variance / 10, 100));
+        
+        return {
+            avgWpm,
+            avgAcc,
+            bestWpm,
+            totalTests,
+            skillLevel: data.skillLevel,
+            streak: data.streaks.current,
+            longestStreak: data.streaks.longest,
+            consistency,
+            practiceTime: Math.round(data.totalPracticeTime / 60),
+            recentTrend: this.calculateTrend(data.improvement.wpmTrend)
+        };
+    },
+    
+    calculateTrend(values) {
+        if (values.length < 5) return 'neutral';
+        const firstHalf = values.slice(0, Math.floor(values.length / 2));
+        const secondHalf = values.slice(Math.floor(values.length / 2));
+        const firstAvg = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
+        const secondAvg = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
+        const diff = secondAvg - firstAvg;
+        if (diff > 3) return 'improving';
+        if (diff < -3) return 'declining';
+        return 'stable';
+    },
+    
+    getChartData() {
+        const data = this.getData();
+        const last7Days = [];
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const key = d.toISOString().split('T')[0];
+            last7Days.push({
+                date: d.toLocaleDateString('en', { weekday: 'short' }),
+                wpm: data.dailyStats[key]?.avgWpm || 0,
+                tests: data.dailyStats[key]?.tests || 0
+            });
+        }
+        return last7Days;
+    }
+};
+
 // DOM Elements
 const quoteDisplay = document.getElementById('quoteDisplay');
 const inputArea = document.getElementById('inputArea');
@@ -202,6 +413,9 @@ function updateStatsAfterTest(wpm, accuracy, characters, errors, timeSeconds, co
             date: new Date().toISOString(),
             mode: currentMode
         });
+        
+        // Update advanced stats
+        AdvancedStats.recordSession({ wpm, accuracy, characters, errors, timeSeconds });
     } else {
         stats.testsAbandoned++;
     }
@@ -1010,3 +1224,264 @@ function cleanupOldRooms() {
 
 // Run cleanup
 cleanupOldRooms();
+
+// Advanced Statistics UI Controller
+const StatsUI = {
+    modal: null,
+    
+    init() {
+        this.createStatsButton();
+        this.createModal();
+    },
+    
+    createStatsButton() {
+        const btn = document.createElement('button');
+        btn.id = 'advancedStatsBtn';
+        btn.className = 'btn btn-stats';
+        btn.innerHTML = '📊 Advanced Stats';
+        btn.onclick = () => this.show();
+        
+        // Insert after personal stats section
+        const section = document.getElementById('personalStatsSection');
+        if (section) {
+            section.querySelector('.personal-stats-header').appendChild(btn);
+        }
+    },
+    
+    createModal() {
+        const modal = document.createElement('div');
+        modal.id = 'advancedStatsModal';
+        modal.className = 'stats-modal';
+        modal.innerHTML = `
+            <div class="stats-content">
+                <div class="stats-header">
+                    <h2>📊 Advanced Statistics</h2>
+                    <button class="close-stats" onclick="StatsUI.hide()">&times;</button>
+                </div>
+                <div class="stats-body" id="statsBody">
+                    <!-- Content populated dynamically -->
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        this.modal = modal;
+        
+        // Close on backdrop click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) this.hide();
+        });
+    },
+    
+    show() {
+        this.render();
+        this.modal.classList.add('show');
+    },
+    
+    hide() {
+        this.modal.classList.remove('show');
+    },
+    
+    render() {
+        const summary = AdvancedStats.getStatsSummary();
+        const chartData = AdvancedStats.getChartData();
+        const data = AdvancedStats.getData();
+        
+        let html = '';
+        
+        if (!summary) {
+            html = `
+                <div class="stats-empty">
+                    <div class="stats-empty-icon">📊</div>
+                    <h3>No Statistics Yet</h3>
+                    <p>Complete some typing tests to see your advanced analytics!</p>
+                </div>
+            `;
+        } else {
+            // Skill Level Badge
+            const levelColors = {
+                'Beginner': '#f59e0b',
+                'Intermediate': '#10b981',
+                'Advanced': '#8b5cf6',
+                'Expert': '#ec4899'
+            };
+            
+            // Trend indicator
+            const trendIcons = {
+                'improving': '📈',
+                'stable': '➡️',
+                'declining': '📉',
+                'neutral': '➖'
+            };
+            
+            html = `
+                <div class="stats-grid">
+                    <!-- Skill Level Card -->
+                    <div class="stats-card stats-highlight">
+                        <div class="stats-card-header">
+                            <span class="stats-label">Skill Level</span>
+                            <span class="stats-trend">${trendIcons[summary.recentTrend]}</span>
+                        </div>
+                        <div class="stats-skill-badge" style="background: ${levelColors[summary.skillLevel]}">
+                            ${summary.skillLevel}
+                        </div>
+                        <div class="stats-subtext">${summary.recentTrend === 'improving' ? 'Keep it up! You\'re getting faster!' : 'Practice daily to improve!'}</div>
+                    </div>
+                    
+                    <!-- Streak Card -->
+                    <div class="stats-card">
+                        <div class="stats-card-header">
+                            <span class="stats-label">🔥 Streak</span>
+                        </div>
+                        <div class="stats-big-value">${summary.streak}</div>
+                        <div class="stats-subtext">day${summary.streak !== 1 ? 's' : ''} in a row</div>
+                        ${summary.longestStreak > summary.streak ? `<div class="stats-mini">Best: ${summary.longestStreak} days</div>` : ''}
+                    </div>
+                    
+                    <!-- Consistency Card -->
+                    <div class="stats-card">
+                        <div class="stats-card-header">
+                            <span class="stats-label">🎯 Consistency</span>
+                        </div>
+                        <div class="stats-big-value">${summary.consistency}%</div>
+                        <div class="stats-subtext">Score stability</div>
+                        <div class="stats-progress-bar">
+                            <div class="stats-progress-fill" style="width: ${summary.consistency}%"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Practice Time Card -->
+                    <div class="stats-card">
+                        <div class="stats-card-header">
+                            <span class="stats-label">⏱️ Practice Time</span>
+                        </div>
+                        <div class="stats-big-value">${summary.practiceTime}</div>
+                        <div class="stats-subtext">minutes total</div>
+                    </div>
+                </div>
+                
+                <!-- Performance Chart -->
+                <div class="stats-section">
+                    <h3>📈 7-Day Performance</h3>
+                    <div class="stats-chart-container">
+                        <svg class="stats-chart" viewBox="0 0 700 200" preserveAspectRatio="none">
+                            ${this.renderChart(chartData)}
+                        </svg>
+                        <div class="stats-chart-labels">
+                            ${chartData.map(d => `
+                                <div class="chart-label ${d.tests === 0 ? 'empty' : ''}">
+                                    <span class="chart-day">${d.date}</span>
+                                    ${d.tests > 0 ? `<span class="chart-wpm">${d.wpm} WPM</span>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Time Distribution -->
+                <div class="stats-section">
+                    <h3>🕐 When You Practice</h3>
+                    <div class="time-distribution">
+                        ${this.renderTimeDistribution(data.timeDistribution)}
+                    </div>
+                </div>
+                
+                <!-- Quick Stats Row -->
+                <div class="stats-quick-row">
+                    <div class="stats-quick-item">
+                        <span class="quick-value">${summary.avgWpm}</span>
+                        <span class="quick-label">Recent Avg WPM</span>
+                    </div>
+                    <div class="stats-quick-item">
+                        <span class="quick-value">${summary.avgAcc}%</span>
+                        <span class="quick-label">Recent Avg Acc</span>
+                    </div>
+                    <div class="stats-quick-item">
+                        <span class="quick-value">${summary.bestWpm}</span>
+                        <span class="quick-label">Personal Best</span>
+                    </div>
+                    <div class="stats-quick-item">
+                        <span class="quick-value">${summary.totalTests}</span>
+                        <span class="quick-label">Total Tests</span>
+                    </div>
+                </div>
+            `;
+        }
+        
+        document.getElementById('statsBody').innerHTML = html;
+    },
+    
+    renderChart(data) {
+        const maxWpm = Math.max(...data.map(d => d.wpm), 50);
+        const points = data.map((d, i) => {
+            const x = (i / (data.length - 1)) * 650 + 25;
+            const y = 180 - (d.wpm / maxWpm) * 150;
+            return { x, y, wpm: d.wpm };
+        });
+        
+        // Create smooth curve
+        let path = `M ${points[0].x} ${points[0].y}`;
+        for (let i = 1; i < points.length; i++) {
+            const prev = points[i - 1];
+            const curr = points[i];
+            const cp1x = prev.x + (curr.x - prev.x) / 2;
+            const cp1y = prev.y;
+            const cp2x = prev.x + (curr.x - prev.x) / 2;
+            const cp2y = curr.y;
+            path += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${curr.x} ${curr.y}`;
+        }
+        
+        // Area fill
+        const areaPath = `${path} L ${points[points.length - 1].x} 180 L ${points[0].x} 180 Z`;
+        
+        return `
+            <defs>
+                <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color:#667eea;stop-opacity:0.3" />
+                    <stop offset="100%" style="stop-color:#667eea;stop-opacity:0" />
+                </linearGradient>
+            </defs>
+            <path d="${areaPath}" fill="url(#chartGradient)" />
+            <path d="${path}" fill="none" stroke="#667eea" stroke-width="3" stroke-linecap="round" />
+            ${points.map(p => `
+                <circle cx="${p.x}" cy="${p.y}" r="6" fill="#667eea" stroke="white" stroke-width="2" />
+            `).join('')}
+        `;
+    },
+    
+    renderTimeDistribution(dist) {
+        const total = Object.values(dist).reduce((a, b) => a + b, 0);
+        if (total === 0) return '<p class="stats-empty-msg">No data yet. Complete some tests! 📝</p>';
+        
+        const periods = [
+            { key: 'morning', label: '🌅 Morning', hours: '6am - 12pm', color: '#fbbf24' },
+            { key: 'afternoon', label: '☀️ Afternoon', hours: '12pm - 6pm', color: '#f59e0b' },
+            { key: 'evening', label: '🌆 Evening', hours: '6pm - 10pm', color: '#8b5cf6' },
+            { key: 'night', label: '🌙 Night', hours: '10pm - 6am', color: '#4f46e5' }
+        ];
+        
+        const max = Math.max(...Object.values(dist));
+        
+        return periods.map(p => {
+            const count = dist[p.key] || 0;
+            const percent = total > 0 ? (count / total) * 100 : 0;
+            const barWidth = max > 0 ? (count / max) * 100 : 0;
+            
+            return `
+                <div class="time-bar-item">
+                    <div class="time-bar-label">
+                        <span class="time-label-main">${p.label}</span>
+                        <span class="time-label-sub">${p.hours}</span>
+                    </div>                    <div class="time-bar-track">
+                        <div class="time-bar-fill" style="width: ${barWidth}%; background: ${p.color}"></div>
+                    </div>
+                    <div class="time-bar-value">${count} test${count !== 1 ? 's' : ''}</div>
+                </div>
+            `;
+        }).join('');
+    }
+};
+
+// Initialize advanced stats UI
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => StatsUI.init(), 100);
+});
