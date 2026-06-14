@@ -1010,3 +1010,106 @@ function cleanupOldRooms() {
 
 // Run cleanup
 cleanupOldRooms();
+
+// Social Share Feature
+const ShareManager = {
+    share(platform, wpm, accuracy) {
+        const url = window.location.href;
+        const text = `I just scored ${wpm} WPM with ${accuracy}% accuracy on Typing Speed Test! 🚀`;
+        
+        const shareUrls = {
+            twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
+            facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+            linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`
+        };
+        
+        if (platform === 'copy') {
+            navigator.clipboard.writeText(`${text} ${url}`)
+                .then(() => showToast('📋 Copied to clipboard!'))
+                .catch(() => showToast('❌ Failed to copy'));
+        } else if (shareUrls[platform]) {
+            window.open(shareUrls[platform], '_blank', 'width=600,height=400,scrollbars=yes');
+        }
+    },
+    
+    createButtons() {
+        const container = document.createElement('div');
+        container.className = 'share-buttons-container';
+        container.innerHTML = `
+            <style>
+                .share-buttons-container {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 10px;
+                    margin-top: 20px;
+                    justify-content: center;
+                    padding: 15px;
+                    background: var(--card-bg, #f8f9fa);
+                    border-radius: 12px;
+                    border: 1px solid var(--border-color, #e0e0e0);
+                }
+                .share-title {
+                    width: 100%;
+                    text-align: center;
+                    font-size: 14px;
+                    font-weight: 600;
+                    color: var(--text-secondary, #6c757d);
+                    margin-bottom: 5px;
+                }
+                .share-btn {
+                    padding: 10px 18px;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    font-weight: 500;
+                    transition: all 0.2s ease;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+                .share-btn:hover { 
+                    transform: translateY(-2px); 
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                }
+                .share-btn:active { transform: translateY(0); }
+                .share-twitter { background: #1DA1F2; color: white; }
+                .share-facebook { background: #4267B2; color: white; }
+                .share-linkedin { background: #0077B5; color: white; }
+                .share-copy { background: #6c757d; color: white; }
+                @media (max-width: 480px) {
+                    .share-btn { padding: 8px 14px; font-size: 13px; }
+                }
+            </style>
+            <span class="share-title">📢 Share your score</span>
+            <button class="share-btn share-twitter" data-platform="twitter">𝕏 Twitter</button>
+            <button class="share-btn share-facebook" data-platform="facebook">📘 Facebook</button>
+            <button class="share-btn share-linkedin" data-platform="linkedin">💼 LinkedIn</button>
+            <button class="share-btn share-copy" data-platform="copy">📋 Copy</button>
+        `;
+        
+        container.querySelectorAll('.share-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const wpm = document.getElementById('finalWpm')?.textContent || '0';
+                const accuracy = document.getElementById('finalAccuracy')?.textContent || '0';
+                this.share(btn.dataset.platform, wpm, accuracy);
+            });
+        });
+        
+        return container;
+    },
+    
+    inject() {
+        const resultsArea = document.getElementById('results');
+        if (resultsArea && !resultsArea.querySelector('.share-buttons-container')) {
+            resultsArea.appendChild(this.createButtons());
+        }
+    }
+};
+
+// Auto-inject share buttons after test completion
+const originalShowResults = showResults;
+showResults = function(...args) {
+    originalShowResults.apply(this, args);
+    setTimeout(() => ShareManager.inject(), 100);
+};
