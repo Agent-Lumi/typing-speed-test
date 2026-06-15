@@ -299,6 +299,12 @@ header p { opacity: 0.9; }
     margin-bottom: 20px;
 }
 
+.stats-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
 .personal-stats-header h2 {
     color: var(--text-primary);
     font-size: 1.3em;

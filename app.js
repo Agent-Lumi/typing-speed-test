@@ -885,6 +885,22 @@ function endTest(completed) {
     
     results.classList.add('show');
     
+    // Save to leaderboard (solo mode only)
+    if (completed && currentMode === 'solo') {
+        const currentDifficulty = DifficultyManager?.currentDifficulty || 'medium';
+        const score = {
+            wpm: wpm,
+            accuracy: accuracy,
+            characters: totalCharacters,
+            errors: characterErrors,
+            timeSeconds: timeElapsed
+        };
+        const isHighScore = Leaderboard.addScore(currentDifficulty, score);
+        if (isHighScore && typeof showToast === 'function') {
+            showToast(`🏆 New high score on ${currentDifficulty} leaderboard!`, 3000);
+        }
+    }
+
     // Multiplayer end
     if (currentMode === 'multiplayer' && currentRoomCode) {
         const roomData = JSON.parse(localStorage.getItem('typing_room_' + currentRoomCode));

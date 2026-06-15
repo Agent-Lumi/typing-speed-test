@@ -38,7 +38,10 @@
         <div class="personal-stats-section" id="personalStatsSection">
             <div class="personal-stats-header">
                 <h2>📊 Your Statistics</h2>
-                <button class="btn btn-small" onclick="toggleHistoryModal()">📜 View History</button>
+                <div class="stats-buttons">
+                    <button class="btn btn-small" onclick="toggleHistoryModal()">📜 View History</button>
+                    <button class="btn btn-small" onclick="Leaderboard.toggleModal()">🏆 Leaderboard</button>
+                </div>
             </div>
             <div class="personal-stats-grid" id="personalStats">
                 <!-- Populated by JS -->
@@ -427,6 +430,7 @@
     
     <script src="app.js"></script>
     <script src="difficulty.js"></script>
+    <script src="leaderboard.js"></script>
 </body>
 </html><style>
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
