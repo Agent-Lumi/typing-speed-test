@@ -1,0 +1,164 @@
+/* Difficulty Levels Styles */
+.difficulty-selector {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 20px 0;
+    padding: 15px;
+    background: var(--bg-card-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.difficulty-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 12px 20px;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 80px;
+    font-family: inherit;
+}
+
+.difficulty-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.difficulty-btn.active {
+    border-color: var(--accent-primary);
+    background: linear-gradient(135deg, var(--accent-primary)20, var(--accent-secondary)20);
+}
+
+.difficulty-btn.easy { border-color: #10b981; }
+.difficulty-btn.easy.active { background: linear-gradient(135deg, #10b98120, #34d39920); }
+.difficulty-btn.medium { border-color: #f59e0b; }
+.difficulty-btn.medium.active { background: linear-gradient(135deg, #f59e0b20, #fbbf2420); }
+.difficulty-btn.hard { border-color: #ef4444; }
+.difficulty-btn.hard.active { background: linear-gradient(135deg, #ef444420, #f8717120); }
+.difficulty-btn.expert { border-color: #8b5cf6; }
+.difficulty-btn.expert.active { background: linear-gradient(135deg, #8b5cf620, #a78bfa20); }
+
+.difficulty-icon {
+    font-size: 1.5em;
+}
+
+.difficulty-label {
+    font-size: 0.9em;
+    font-weight: 600;
+}
+
+.difficulty-desc {
+    font-size: 0.7em;
+    color: var(--text-muted);
+}
+
+.difficulty-info {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin: 10px 0;
+    padding: 10px;
+    background: var(--bg-card);
+    border-radius: 8px;
+}
+
+.difficulty-stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85em;
+    color: var(--text-secondary);
+}
+
+.difficulty-stat .icon {
+    font-size: 1.1em;
+}
+
+/* Difficulty badges */
+.difficulty-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75em;
+    font-weight: 600;
+}
+
+.difficulty-badge.easy {
+    background: #10b98120;
+    color: #10b981;
+}
+
+.difficulty-badge.medium {
+    background: #f59e0b20;
+    color: #f59e0b;
+}
+
+.difficulty-badge.hard {
+    background: #ef444420;
+    color: #ef4444;
+}
+
+.difficulty-badge.expert {
+    background: #8b5cf620;
+    color: #8b5cf6;
+}
+
+/* Personal best by difficulty */
+.personal-bests-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.personal-best-card {
+    text-align: center;
+    padding: 12px;
+    background: var(--bg-card);
+    border-radius: 10px;
+    border: 2px solid var(--border-color);
+}
+
+.personal-best-card.easy { border-color: #10b98140; }
+.personal-best-card.medium { border-color: #f59e0b40; }
+.personal-best-card.hard { border-color: #ef444440; }
+.personal-best-card.expert { border-color: #8b5cf640; }
+
+.personal-best-title {
+    font-size: 0.75em;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.personal-best-value {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.personal-best-empty {
+    color: var(--text-muted);
+    font-size: 0.9em;
+}
+
+/* Difficulty unlocked animation */
+@keyframes unlockPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); box-shadow: 0 0 30px currentColor; }
+    100% { transform: scale(1); }
+}
+
+.difficulty-unlocked {
+    animation: unlockPulse 0.5s ease;
+}

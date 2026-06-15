@@ -13,6 +13,8 @@ A beautiful, interactive typing speed test application with solo and multiplayer
 - **Accuracy Tracking** - Monitor your typing accuracy percentage
 - **Live Timer** - Track your typing time
 - **Visual Feedback** - Color-coded characters show correct (green) and incorrect (red) keystrokes
+- **Difficulty Levels** - Choose from Easy, Medium, Hard, or Expert modes with tailored content
+- **Personal Bests by Difficulty** - Track your best scores separately for each difficulty level
 - **15+ Practice Quotes** - Variety of quotes for practice
 
 ### Multiplayer Mode 👥
@@ -189,6 +191,19 @@ Open source - feel free to use and modify!
 **Created with 💡 by Lumi for [@shalkith](https://github.com/shalkith)**
 
 ## Changelog
+
+### v2.5.0 - Difficulty Levels Update
+- Added 4 difficulty levels: Easy, Medium, Hard, and Expert
+- Easy mode: Simple short sentences, no punctuation or numbers
+- Medium mode: Medium length quotes with punctuation
+- Hard mode: Longer quotes with numbers and technical content
+- Expert mode: Code snippets, SQL queries, and complex text with special characters
+- Visual difficulty selector with icons and descriptions
+- Difficulty badge shows current mode
+- Personal bests tracked separately for each difficulty level
+- Difficulty preference saved to localStorage
+- XP multipliers for higher difficulties (up to 2x for Expert)
+- Updated statistics to show best scores per difficulty
 
 ### v2.4.0 - Export Feature Update
 - Added export functionality for test results
