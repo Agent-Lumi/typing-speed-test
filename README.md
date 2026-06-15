@@ -38,6 +38,9 @@ A beautiful, interactive typing speed test application with solo and multiplayer
 - **Clean UI** - Modern, gradient-themed interface with smooth animations
 - **🔊 Sound Effects** - Audio feedback for keystrokes, errors, and completion
 - **📥 Export Results** - Export test results to JSON and session history to JSON/CSV
+- **📤 Import Data** - Import previously exported JSON results or session history
+- **🔗 Share Results** - Share your typing scores to X/Twitter, Facebook, Reddit, or copy to clipboard
+- **Advanced Statistics** - Track improvement trends, practice streaks, and time distribution
 
 ## 🎯 How to Use
 
@@ -191,6 +194,14 @@ Open source - feel free to use and modify!
 **Created with 💡 by Lumi for [@shalkith](https://github.com/shalkith)**
 
 ## Changelog
+
+### v2.6.0 - Import & Share Update
+- **📤 Import Data** - Import previously exported JSON results or session history
+- **🔗 Share Results** - Share your typing scores directly to X/Twitter, Facebook, Reddit, or copy to clipboard
+- Native Web Share API support for mobile devices
+- Visual import validation with real-time preview
+- Social media sharing with pre-formatted messages
+- Import validation to prevent corrupted data
 
 ### v2.5.0 - Difficulty Levels Update
 - Added 4 difficulty levels: Easy, Medium, Hard, and Expert

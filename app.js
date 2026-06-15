@@ -344,6 +344,9 @@ function init() {
     // Track stats
     trackUsageStats();
     
+    // Initialize import manager UI
+    setTimeout(() => ImportManager.createImportUI(), 500);
+    
     // Load and display statistics
     loadAndDisplayStats();
 }
@@ -1096,6 +1099,326 @@ function showToast(message) {
         toast.classList.remove('show');
     }, 3000);
 }
+
+// Import Manager
+const ImportManager = {
+    validateJSON(jsonString) {
+        try {
+            const data = JSON.parse(jsonString);
+            
+            // Check if it's a single result
+            if (data.date && data.wpm !== undefined && data.accuracy !== undefined) {
+                return { type: 'result', data };
+            }
+            
+            // Check if it's history
+            if (data.sessions && Array.isArray(data.sessions)) {
+                return { type: 'history', data };
+            }
+            
+            return { type: 'unknown', data };
+        } catch (e) {
+            return { type: 'invalid', error: e.message };
+        }
+    },
+    
+    importResult(result) {
+        // Add to session history
+        const sessionHistory = JSON.parse(localStorage.getItem(SESSION_HISTORY_KEY) || '[]');
+        sessionHistory.unshift({
+            date: result.date || new Date().toISOString(),
+            wpm: result.wpm,
+            accuracy: result.accuracy,
+            characters: result.characters || 0,
+            errors: result.errors || 0,
+            mode: result.mode || 'solo',
+            difficulty: result.difficulty || 'medium',
+            quote: result.quote || ''
+        });
+        
+        if (sessionHistory.length > MAX_HISTORY_ITEMS) {
+            sessionHistory.pop();
+        }
+        
+        localStorage.setItem(SESSION_HISTORY_KEY, JSON.stringify(sessionHistory));
+        
+        // Update personal stats
+        if (typeof updatePersonalStats === 'function') {
+            updatePersonalStats(result.wpm, result.accuracy, result.characters, result.errors);
+        }
+        
+        return true;
+    },
+    
+    importHistory(data) {
+        let imported = 0;
+        
+        if (data.sessions && Array.isArray(data.sessions)) {
+            const sessionHistory = JSON.parse(localStorage.getItem(SESSION_HISTORY_KEY) || '[]');
+            
+            data.sessions.forEach(session => {
+                if (session.wpm !== undefined && session.accuracy !== undefined) {
+                    sessionHistory.push({
+                        date: session.date || session.timestamp || new Date().toISOString(),
+                        wpm: session.wpm,
+                        accuracy: session.accuracy,
+                        characters: session.characters || 0,
+                        errors: session.errors || 0,
+                        mode: session.mode || 'solo'
+                    });
+                    imported++;
+                }
+            });
+            
+            // Sort by date, newest first
+            sessionHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            // Keep only MAX_HISTORY_ITEMS
+            while (sessionHistory.length > MAX_HISTORY_ITEMS) {
+                sessionHistory.pop();
+            }
+            
+            localStorage.setItem(SESSION_HISTORY_KEY, JSON.stringify(sessionHistory));
+        }
+        
+        return imported;
+    },
+    
+    createImportUI() {
+        const importBtn = document.createElement('button');
+        importBtn.className = 'btn btn-import';
+        importBtn.innerHTML = '📤 Import Data';
+        importBtn.onclick = () => this.showImportModal();
+        
+        // Add to export-buttons section
+        const exportSection = document.querySelector('.export-buttons');
+        if (exportSection) {
+            exportSection.insertBefore(importBtn, exportSection.firstChild);
+        }
+    },
+    
+    showImportModal() {
+        const modal = document.createElement('div');
+        modal.className = 'history-modal';
+        modal.id = 'importModal';
+        modal.innerHTML = `
+            <div class="history-content" style="max-width: 500px;">
+                <div class="history-header">
+                    <h2>📤 Import Data</h2>
+                    <button class="close-history" onclick="ImportManager.closeImportModal()">&times;</button>
+                </div>
+                <div style="padding: 20px;">
+                    <p style="margin-bottom: 15px; color: var(--text-secondary);">Paste your exported JSON data below:</p>
+                    <textarea id="importTextarea" style="width: 100%; height: 150px; padding: 10px; border: 2px solid var(--border-color); border-radius: 8px; font-family: monospace; resize: vertical; background: var(--bg-input); color: var(--text-primary);" placeholder='{"date": "...", "wpm": 50, ...}'></textarea>
+                    <div id="importPreview" style="margin-top: 15px; padding: 15px; border-radius: 8px; display: none;"></div>
+                </div>
+                <div class="history-footer" style="justify-content: flex-end; gap: 10px;">
+                    <button class="btn btn-secondary" onclick="ImportManager.closeImportModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="ImportManager.processImport()">📥 Import</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Add preview on input
+        const textarea = document.getElementById('importTextarea');
+        textarea.addEventListener('input', () => this.previewImport(textarea.value));
+        
+        setTimeout(() => modal.classList.add('show'), 10);
+    },
+    
+    previewImport(jsonString) {
+        const preview = document.getElementById('importPreview');
+        const result = this.validateJSON(jsonString);
+        
+        if (result.type === 'invalid') {
+            preview.style.display = 'block';
+            preview.style.background = 'var(--error)';
+            preview.style.color = 'white';
+            preview.innerHTML = `<strong>❌ Invalid JSON:</strong> ${result.error}`;
+        } else if (result.type === 'result') {
+            preview.style.display = 'block';
+            preview.style.background = 'var(--success)';
+            preview.style.color = 'white';
+            preview.innerHTML = `<strong>✅ Valid Result:</strong> ${result.data.wpm} WPM, ${result.data.accuracy}% accuracy`;
+        } else if (result.type === 'history') {
+            const count = result.data.sessions ? result.data.sessions.length : 0;
+            preview.style.display = 'block';
+            preview.style.background = 'var(--success)';
+            preview.style.color = 'white';
+            preview.innerHTML = `<strong>✅ Valid History:</strong> ${count} sessions to import`;
+        } else {
+            preview.style.display = 'block';
+            preview.style.background = 'var(--warning)';
+            preview.style.color = 'white';
+            preview.innerHTML = `<strong>⚠️ Unknown format</strong> - will try to import anyway`;
+        }
+    },
+    
+    processImport() {
+        const textarea = document.getElementById('importTextarea');
+        const jsonString = textarea.value.trim();
+        
+        if (!jsonString) {
+            showToast('Please paste some data to import');
+            return;
+        }
+        
+        const result = this.validateJSON(jsonString);
+        
+        if (result.type === 'invalid') {
+            showToast('Invalid JSON data');
+            return;
+        }
+        
+        let message = '';
+        
+        if (result.type === 'result') {
+            this.importResult(result.data);
+            message = `Imported result: ${result.data.wpm} WPM`;
+        } else if (result.type === 'history') {
+            const count = this.importHistory(result.data);
+            message = `Imported ${count} sessions`;
+        } else {
+            // Try as result first, then history
+            try {
+                this.importResult(result.data);
+                message = 'Data imported successfully';
+            } catch (e) {
+                const count = this.importHistory(result.data);
+                message = `Imported ${count} items`;
+            }
+        }
+        
+        this.closeImportModal();
+        showToast(message);
+        
+        // Refresh stats display
+        if (typeof updatePersonalStatsUI === 'function') {
+            updatePersonalStatsUI();
+        }
+        if (typeof loadSessionHistory === 'function') {
+            loadSessionHistory();
+        }
+    },
+    
+    closeImportModal() {
+        const modal = document.getElementById('importModal');
+        if (modal) {
+            modal.classList.remove('show');
+            setTimeout(() => modal.remove(), 300);
+        }
+    }
+};
+
+// Share Manager
+const ShareManager = {
+    // Share result via Web Share API or copy to clipboard
+    async shareResult() {
+        const finalWpm = document.getElementById('finalWpm').textContent;
+        const finalAccuracy = document.getElementById('finalAccuracy').textContent;
+        const finalChars = document.getElementById('finalChars').textContent;
+        const finalErrors = document.getElementById('finalErrors').textContent;
+        
+        if (finalWpm === '0') {
+            showToast('Complete a test first to share results');
+            return;
+        }
+        
+        const shareText = `⌨️ I just scored ${finalWpm} WPM with ${finalAccuracy}% accuracy on Typing Speed Test!\n\nCan you beat my score? Try it now: https://agent-lumi.github.io/typing-speed-test/`;
+        
+        // Try native share API first (works on mobile)
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'My Typing Speed Test Result',
+                    text: shareText,
+                    url: 'https://agent-lumi.github.io/typing-speed-test/'
+                });
+                showToast('✅ Shared successfully!');
+                return;
+            } catch (err) {
+                // User cancelled or failed, fallback to clipboard
+                console.log('Share cancelled, using clipboard');
+            }
+        }
+        
+        // Fallback to clipboard
+        this.copyToClipboard(shareText);
+    },
+    
+    // Copy text to clipboard
+    async copyToClipboard(text) {
+        try {
+            await navigator.clipboard.writeText(text);
+            showToast('✅ Result copied to clipboard!');
+        } catch (err) {
+            // Final fallback: create temporary textarea
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.left = '-9999px';
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                document.execCommand('copy');
+                showToast('✅ Result copied to clipboard!');
+            } catch (e) {
+                showToast('❌ Failed to copy. Please copy manually.');
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+    },
+    
+    // Create share buttons for social platforms
+    createSocialButtons() {
+        const container = document.createElement('div');
+        container.className = 'share-buttons-container';
+        container.innerHTML = `
+            <button class="btn btn-share twitter" onclick="ShareManager.shareToTwitter()" title="Share on X/Twitter">
+                🐦 X
+            </button>
+            <button class="btn btn-share facebook" onclick="ShareManager.shareToFacebook()" title="Share on Facebook">
+                📘 FB
+            </button>
+            <button class="btn btn-share reddit" onclick="ShareManager.shareToReddit()" title="Share on Reddit">
+                🤖 Reddit
+            </button>
+            <button class="btn btn-share copy" onclick="ShareManager.shareResult()" title="Copy to clipboard">
+                📋 Copy
+            </button>
+        `;
+        
+        // Add after results
+        const results = document.getElementById('results');
+        if (results) {
+            results.appendChild(container);
+        }
+    },
+    
+    shareToTwitter() {
+        const finalWpm = document.getElementById('finalWpm').textContent;
+        const finalAccuracy = document.getElementById('finalAccuracy').textContent;
+        const text = `I just scored ${finalWpm} WPM with ${finalAccuracy}% accuracy on Typing Speed Test! Can you beat my score?`;
+        const url = 'https://agent-lumi.github.io/typing-speed-test/';
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+    },
+    
+    shareToFacebook() {
+        const url = 'https://agent-lumi.github.io/typing-speed-test/';
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+    },
+    
+    shareToReddit() {
+        const finalWpm = document.getElementById('finalWpm').textContent;
+        const finalAccuracy = document.getElementById('finalAccuracy').textContent;
+        const title = `I just scored ${finalWpm} WPM with ${finalAccuracy}% accuracy on Typing Speed Test!`;
+        const url = 'https://agent-lumi.github.io/typing-speed-test/';
+        window.open(`https://www.reddit.com/submit?title=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`, '_blank');
+    }
+};
 
 // Export Functions
 const ExportManager = {
