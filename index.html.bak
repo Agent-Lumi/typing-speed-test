@@ -16,6 +16,7 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="difficulty.css">
 </head>
 <body>
     <!-- Offline Indicator -->
@@ -175,6 +176,13 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Export Buttons -->
+            <div class="export-buttons">
+                <button class="btn btn-export" onclick="ExportManager.exportCurrentResult()">
+                    📥 Export Result (JSON)
+                </button>
+            </div>
         </div>
         
         <footer>
@@ -211,6 +219,10 @@
                 <div class="shortcut-row">
                     <span>Ctrl/⌘ + R</span>
                     <span class="shortcut-key">Reset</span>
+                </div>
+                <div class="shortcut-row">
+                    <span>T</span>
+                    <span class="shortcut-key">Toggle Theme</span>
                 </div>
                 <div class="shortcut-row">
                     <span>?</span>
@@ -253,6 +265,8 @@
                 </table>
             </div>
             <div class="history-footer">
+                <button class="btn btn-secondary btn-small" onclick="ExportManager.exportHistory()">📥 Export JSON</button>
+                <button class="btn btn-secondary btn-small" onclick="ExportManager.exportHistoryCSV()">📊 Export CSV</button>
                 <button class="btn btn-danger" onclick="clearAllStats()">🗑️ Clear All Statistics</button>
             </div>
         </div>
@@ -409,6 +423,7 @@
     </script>
     
     <script src="app.js"></script>
+    <script src="difficulty.js"></script>
 </body>
 </html><style>
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -416,3 +431,19 @@
 button { transition: all 0.2s ease; }
 button:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
 </style>
+<script>
+// Share functionality
+const shareBtn = document.createElement('button');
+shareBtn.textContent = '🔗 Share';
+shareBtn.style.cssText = 'position:fixed;bottom:20px;right:20px;padding:10px 20px;background:#6f42c1;color:white;border:none;border-radius:20px;cursor:pointer;';
+shareBtn.onclick = () => {
+    if (navigator.share) {
+        navigator.share({ title: document.title, url: location.href });
+    } else {
+        navigator.clipboard.writeText(location.href);
+        shareBtn.textContent = '✅ Copied!';
+        setTimeout(() => shareBtn.textContent = '🔗 Share', 2000);
+    }
+};
+document.body.appendChild(shareBtn);
+</script>
