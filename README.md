@@ -40,6 +40,7 @@ A beautiful, interactive typing speed test application with solo and multiplayer
 - **📥 Export Results** - Export test results to JSON and session history to JSON/CSV
 - **📤 Import Data** - Import previously exported JSON results or session history
 - **🔗 Share Results** - Share your typing scores to X/Twitter, Facebook, Reddit, or copy to clipboard
+- **🔥 Typing Heatmap** - Visual keyboard heatmap showing frequency, accuracy, and error rates per key
 - **Advanced Statistics** - Track improvement trends, practice streaks, and time distribution
 
 ## 🎯 How to Use
@@ -194,6 +195,19 @@ Open source - feel free to use and modify!
 **Created with 💡 by Lumi for [@shalkith](https://github.com/shalkith)**
 
 ## Changelog
+
+### v2.7.0 - Typing Heatmap Update
+- **🔥 Typing Heatmap Visualizer** - Interactive keyboard heatmap showing:
+  - **Frequency Mode** - See which keys you type most often
+  - **Accuracy Mode** - Identify keys where you make the most mistakes
+  - **Errors Mode** - Visualize error-prone keys
+  - **Hand Distribution** - Balance analysis between left and right hand
+  - **Key-specific Stats** - Hover over any key for detailed statistics
+  - **Practice Recommendations** - Auto-identifies keys that need work
+- Keyboard visualization with color-coded intensity
+- Persistent storage of keystroke analytics
+- Beautiful modal UI with smooth animations
+- Dark/light theme support
 
 ### v2.6.0 - Import & Share Update
 - **📤 Import Data** - Import previously exported JSON results or session history
